@@ -1,0 +1,31 @@
+.claude-plugin/marketplace.json
+  s_4f84efea563153::t_031b197f52050d 2
+README.md
+  s_4f84efea563153::t_ba576f6ecebed7 1,10,16,39
+.template-config.json
+  s_4f84efea563153::t_e44f9adb66bede 3,5
+CLAUDE.md
+  s_4f84efea563153::t_df4de95a16333f 7
+plugins/code-intelligence/README.md
+  s_4f84efea563153::t_4c3d2b6e9f5576 28
+docs/index.html
+  s_4f84efea563153::t_e6f84d2f66e9f4 6,751,779,804,959,977,1210,1267,1271-1272,1284
+docs/data.json
+  s_4f84efea563153::t_b4257aaa12a3dc 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "449c83e11e8633b7d2de4c854a196bbc0eb91cc8",
+  "prompts": {},
+  "sessions": {
+    "s_4f84efea563153": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3a9f41ed-e85f-4937-a0f9-588044e552f1",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Graham Brooks <graham@grahambrooks.com>"
+    }
+  }
+}
