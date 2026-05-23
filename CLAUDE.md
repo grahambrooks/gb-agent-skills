@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-A Claude Code **plugin marketplace** — not application code. It hosts plugins that users install via `/plugin marketplace add grahambrooks/agent-skills`. The repo was bootstrapped from [stbenjam/claude-marketplace-template](https://github.com/stbenjam/claude-marketplace-template) and retains the template's update mechanism (`make update-from-template`).
+A Claude Code **plugin marketplace** — not application code. It hosts plugins that users install via `/plugin marketplace add grahambrooks/gb-agent-skills`. The repo was bootstrapped from [stbenjam/claude-marketplace-template](https://github.com/stbenjam/claude-marketplace-template) and retains the template's update mechanism (`make update-from-template`).
 
 ## Common commands
 

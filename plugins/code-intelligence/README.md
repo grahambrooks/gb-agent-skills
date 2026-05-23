@@ -25,7 +25,7 @@ See the [bx README](https://github.com/grahambrooks/bx) for other install method
 ## Install
 
 ```
-/plugin install code-intelligence@agent-skills
+/plugin install code-intelligence@gb-agent-skills
 ```
 
 That's it. Open a project, start a session, and the hook will index it in the background.

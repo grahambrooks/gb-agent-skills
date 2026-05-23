@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>agent-skills - Claude Code Plugins</title>
+    <title>gb-agent-skills - Claude Code Plugins</title>
     <style>
         :root {
             --primary: #6a4c93;
@@ -748,7 +748,7 @@
         <div class="navbar-content">
             <div class="navbar-brand">
                 <div class="navbar-title">
-                    <h1>agent-skills</h1>
+                    <h1>gb-agent-skills</h1>
                     <p class="subtitle">Claude Code Plugins by Graham Brooks</p>
                 </div>
                 <div class="navbar-stats">
@@ -776,7 +776,7 @@
             </div>
             <div class="navbar-links">
                 <a href="#install" class="nav-link primary">How to Install</a>
-                <a href="https://github.com/grahambrooks/agent-skills" class="nav-link" target="_blank">GitHub</a>
+                <a href="https://github.com/grahambrooks/gb-agent-skills" class="nav-link" target="_blank">GitHub</a>
                 <a href="https://docs.claude.com/en/docs/claude-code/overview" class="nav-link" target="_blank">Docs</a>
             </div>
         </div>
@@ -801,7 +801,7 @@
         </div>
 
         <footer>
-            <p>Built with <a href="https://github.com/stbenjam/claude-marketplace-template" style="color: var(--primary);">Claude Marketplace Template</a> | <a href="https://github.com/grahambrooks/agent-skills" style="color: var(--primary);">grahambrooks/agent-skills</a></p>
+            <p>Built with <a href="https://github.com/stbenjam/claude-marketplace-template" style="color: var(--primary);">Claude Marketplace Template</a> | <a href="https://github.com/grahambrooks/gb-agent-skills" style="color: var(--primary);">grahambrooks/gb-agent-skills</a></p>
         </footer>
     </div>
 
@@ -956,7 +956,7 @@
                         <button class="close-button" onclick="closeModal()">&times;</button>
                     </div>
                     ${plugin.has_readme ? `
-                    <a href="https://github.com/grahambrooks/agent-skills/tree/main/plugins/${plugin.name}/README.md"
+                    <a href="https://github.com/grahambrooks/gb-agent-skills/tree/main/plugins/${plugin.name}/README.md"
                        target="_blank"
                        class="readme-button">
                         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -974,7 +974,7 @@
                 <div style="margin-bottom: 1.5rem;">
                     <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Install this plugin:</div>
                     <div style="position: relative;">
-                        <div class="code-block" style="padding-right: 5rem;">/plugin install ${plugin.name}@agent-skills</div>
+                        <div class="code-block" style="padding-right: 5rem;">/plugin install ${plugin.name}@gb-agent-skills</div>
                         <button class="copy-button" onclick="copyInstallCommand('${plugin.name}', event)" title="Copy to clipboard">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M5.75 4.75H10.25V1.75H5.75V4.75ZM5.75 4.75H2.75V14.25H10.25V11.25M5.75 4.75V7.75H13.25V14.25H10.25V11.25M10.25 11.25H13.25V7.75H5.75V4.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1207,7 +1207,7 @@
 
         // Copy install command to clipboard
         function copyInstallCommand(pluginName, event) {
-            const command = `/plugin install ${pluginName}@agent-skills`;
+            const command = `/plugin install ${pluginName}@gb-agent-skills`;
             copyToClipboard(command, event);
         }
 
@@ -1264,12 +1264,12 @@
         function showInstallModal() {
             const content = `
                 <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
-                    Install plugins from the agent-skills marketplace using Claude Code:
+                    Install plugins from the gb-agent-skills marketplace using Claude Code:
                 </p>
 
                 <div style="position: relative; margin-bottom: 1.5rem;">
-                    <div class="code-block" style="padding-right: 5rem;">/plugin marketplace add grahambrooks/agent-skills</div>
-                    <button class="copy-button" onclick="copyToClipboard('/plugin marketplace add grahambrooks/agent-skills', event)" title="Copy to clipboard">
+                    <div class="code-block" style="padding-right: 5rem;">/plugin marketplace add grahambrooks/gb-agent-skills</div>
+                    <button class="copy-button" onclick="copyToClipboard('/plugin marketplace add grahambrooks/gb-agent-skills', event)" title="Copy to clipboard">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M5.75 4.75H10.25V1.75H5.75V4.75ZM5.75 4.75H2.75V14.25H10.25V11.25M5.75 4.75V7.75H13.25V14.25H10.25V11.25M10.25 11.25H13.25V7.75H5.75V4.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
@@ -1281,7 +1281,7 @@
                     Install a specific plugin:
                 </p>
 
-                <div class="code-block">/plugin install code-intelligence@agent-skills</div>
+                <div class="code-block">/plugin install code-intelligence@gb-agent-skills</div>
 
                 <p style="margin: 1.5rem 0 1rem; color: var(--text-secondary);">
                     Use the skill from the plugin:

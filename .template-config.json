@@ -1,8 +1,8 @@
 {
   "template_version": "1.0.0",
-  "marketplace_name": "agent-skills",
+  "marketplace_name": "gb-agent-skills",
   "owner_name": "Graham Brooks",
-  "github_repo": "grahambrooks/agent-skills",
+  "github_repo": "grahambrooks/gb-agent-skills",
   "color_scheme": {
     "primary": "#6a4c93",
     "primary_dark": "#4a3369",

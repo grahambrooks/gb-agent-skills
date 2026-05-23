@@ -1,4 +1,4 @@
-# agent-skills
+# gb-agent-skills
 
 Claude Code Plugins by Graham Brooks
 
@@ -7,13 +7,13 @@ Claude Code Plugins by Graham Brooks
 Add the marketplace to Claude Code:
 
 ```
-/plugin marketplace add grahambrooks/agent-skills
+/plugin marketplace add grahambrooks/gb-agent-skills
 ```
 
 Install a specific plugin:
 
 ```
-/plugin install code-intelligence@agent-skills
+/plugin install code-intelligence@gb-agent-skills
 ```
 
 ## Plugins
@@ -36,7 +36,7 @@ make update
 
 ## Documentation
 
-Visit the [documentation site](https://grahambrooks.github.io/agent-skills) for more information.
+Visit the [documentation site](https://grahambrooks.github.io/gb-agent-skills) for more information.
 
 ## License
 
