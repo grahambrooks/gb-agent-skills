@@ -1,0 +1,9 @@
+{
+  "installedPlugins": [
+    {
+      "name": "code-intelligence",
+      "source": "local",
+      "enabled": true
+    }
+  ]
+}

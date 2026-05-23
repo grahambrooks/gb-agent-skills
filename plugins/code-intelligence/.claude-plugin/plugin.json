@@ -1,0 +1,8 @@
+{
+  "name": "code-intelligence",
+  "description": "Semantic code intelligence for Claude Code. Launches the symgraph MCP server on-demand via bx — no manual install required.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Graham Brooks"
+  }
+}

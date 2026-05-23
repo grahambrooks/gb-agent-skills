@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "symgraph": {
+      "type": "stdio",
+      "command": "bx",
+      "args": ["grahambrooks/symgraph", "serve", "--in-memory"],
+      "env": {
+        "SYMGRAPH_ROOT": "${CLAUDE_PROJECT_DIR}"
+      }
+    }
+  }
+}

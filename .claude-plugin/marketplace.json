@@ -1,0 +1,13 @@
+{
+  "name": "agent-skills",
+  "owner": {
+    "name": "Graham Brooks"
+  },
+  "plugins": [
+    {
+      "name": "code-intelligence",
+      "source": "./plugins/code-intelligence",
+      "description": "Semantic code intelligence via the symgraph MCP server, launched on-demand by bx."
+    }
+  ]
+}

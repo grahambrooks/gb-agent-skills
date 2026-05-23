@@ -1,0 +1,29 @@
+{
+  "name": "agent-skills",
+  "owner": "Graham Brooks",
+  "plugins": [
+    {
+      "name": "code-intelligence",
+      "description": "Semantic code intelligence via the symgraph MCP server, launched on-demand by bx.",
+      "version": "0.1.0",
+      "commands": [],
+      "skills": [
+        {
+          "name": "explore-code",
+          "id": "explore-code",
+          "description": "Use symgraph MCP tools to explore and understand code. Use when the user asks about code structure, symbol relationships, call graphs, impact analysis, dead code, interface implementations, or needs focused context for a coding task."
+        }
+      ],
+      "hooks": [
+        {
+          "name": "session-start",
+          "event": "SessionStart",
+          "description": "Verify bx is installed and kick off a background symgraph index if the project has never been indexed."
+        }
+      ],
+      "agents": [],
+      "has_readme": true,
+      "has_mcp": true
+    }
+  ]
+}
