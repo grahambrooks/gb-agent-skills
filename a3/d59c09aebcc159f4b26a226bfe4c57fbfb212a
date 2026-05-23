@@ -1,0 +1,19 @@
+.github/workflows/deploy-docs.yml
+  s_54d06190c0b88c::t_dbc2184302fc8f 1-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "a3d59c09aebcc159f4b26a226bfe4c57fbfb212a",
+  "prompts": {},
+  "sessions": {
+    "s_54d06190c0b88c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "103e0d33-aa51-48ad-86ca-77c6e05bda2f",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Graham Brooks <graham@grahambrooks.com>"
+    }
+  }
+}
