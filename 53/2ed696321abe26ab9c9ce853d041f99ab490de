@@ -1,0 +1,98 @@
+docs/README.md
+  s_9c0d89c418f5fa::t_406016f15315b5 1-18
+plugins/code-intelligence/hooks/hooks.json
+  s_4f84efea563153::t_24ae0d55b8e314 1-14
+scripts/build-website.py
+  s_9c0d89c418f5fa::t_406016f15315b5 1-216
+LICENSE
+  s_9c0d89c418f5fa::t_406016f15315b5 1-21
+scripts/apply-branding.py
+  s_9c0d89c418f5fa::t_406016f15315b5 1-113
+README.md
+  s_9c0d89c418f5fa::t_7dbf758431b0d5 1,3,5,7,10,13,19,23,25,27-28,31,34,37,39
+  s_9c0d89c418f5fa::t_406016f15315b5 2,4,6,8-9,11-12,14-15,17-18,20,22,24,26,29-30,32-33,35-36,38,40-43
+  s_4f84efea563153::t_f22e07de764720 16,21
+CLAUDE.md
+  s_4f84efea563153::t_ab99f6dead4ae9 1-37,39-50
+  s_4f84efea563153::t_2c8d9b3ee80c9b 38
+plugins/code-intelligence/skills/explore-code/SKILL.md
+  s_4f84efea563153::t_979b242f685da8 1-46
+docs/index.html
+  s_4f84efea563153::t_958de23fd55008 1284,1287,1290
+  s_9c0d89c418f5fa::t_7dbf758431b0d5 6,9-11,751-752,779,804,959,977,1210,1267,1271-1272
+  s_9c0d89c418f5fa::t_406016f15315b5 1-5,7-8,12-750,753-778,780-803,805-958,960-976,978-1209,1211-1266,1268-1270,1273-1283,1285-1286,1288-1289,1291-1328
+.claude-plugin/settings.json
+  s_4f84efea563153::t_1781f2a5e2db67 4
+  s_9c0d89c418f5fa::t_406016f15315b5 1-3,5-9
+README.md.template
+  s_9c0d89c418f5fa::t_406016f15315b5 1-43
+.gitignore
+  s_9c0d89c418f5fa::t_406016f15315b5 1-26
+.github/workflows/lint.yml
+  s_9c0d89c418f5fa::t_406016f15315b5 1-20
+.template-config.json
+  s_9c0d89c418f5fa::t_406016f15315b5 1-2,6,10-11
+  s_9c0d89c418f5fa::t_430857beca39d1 3-5,7-9
+docs/data.json
+  s_9c0d89c418f5fa::t_406016f15315b5 1,4-5,27-29
+  s_9c0d89c418f5fa::t_58b08b3fa2a8e2 2-3
+  s_4f84efea563153::t_22b8209e3fc4f2 6-26
+.claude-plugin/marketplace.json.template
+  s_9c0d89c418f5fa::t_406016f15315b5 1-13
+.claudelint-custom.py
+  s_9c0d89c418f5fa::t_406016f15315b5 1-135
+plugins/code-intelligence/.claude-plugin/plugin.json
+  s_4f84efea563153::t_5a64231b744689 1-8
+TEMPLATE.md
+  s_9c0d89c418f5fa::t_406016f15315b5 1-104
+plugins/code-intelligence/hooks/session-start.sh
+  s_4f84efea563153::t_9bf46c7873d542 1-38
+PLUGINS.md
+  s_9c0d89c418f5fa::t_406016f15315b5 1-2,4
+  s_4f84efea563153::t_5b7fc116fc1bb5 3,5-11
+plugins/code-intelligence/.mcp.json
+  s_4f84efea563153::t_5b06791527ce5f 1-5,7-12
+  h_37b3b27dede911 6
+plugins/code-intelligence/README.md
+  s_4f84efea563153::t_b2369f0bee12e2 1-74
+scripts/generate_plugin_docs.py
+  s_4f84efea563153::t_85bab8fe0764fb 103,105,110
+  s_9c0d89c418f5fa::t_406016f15315b5 1-102,104,106-109,111-181
+Makefile
+  s_9c0d89c418f5fa::t_406016f15315b5 1-69
+.claude-plugin/marketplace.json
+  s_9c0d89c418f5fa::t_7dbf758431b0d5 2,4
+  s_4f84efea563153::t_dc8c0c6cba45d7 8-10
+  s_9c0d89c418f5fa::t_406016f15315b5 1,3,5-7,11-13
+plugins/code-intelligence/hooks/session-start.md
+  s_4f84efea563153::t_baee40f20edd87 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "532ed696321abe26ab9c9ce853d041f99ab490de",
+  "prompts": {},
+  "humans": {
+    "h_37b3b27dede911": {
+      "author": "Graham Brooks <graham@grahambrooks.com>"
+    }
+  },
+  "sessions": {
+    "s_4f84efea563153": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3a9f41ed-e85f-4937-a0f9-588044e552f1",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Graham Brooks <graham@grahambrooks.com>"
+    },
+    "s_9c0d89c418f5fa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8d93e36e-b5ea-4852-8078-52039f0bb995",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Graham Brooks <graham@grahambrooks.com>"
+    }
+  }
+}
