@@ -2,6 +2,10 @@
 
 Claude Code Plugins by Graham Brooks
 
+## Prerequisites
+
+These skills use [bx](https://github.com/grahambrooks/bx) to launch MCP servers on-demand. Please install `bx` to use these skills. bx manages the download and execution of MCP tools referenced in the mcp.json files in the plugins.
+
 ## Installation
 
 Add the marketplace to Claude Code:
@@ -18,7 +22,7 @@ Install a specific plugin:
 
 ## Plugins
 
-- **code-intelligence**: Semantic code intelligence via the [symgraph](https://github.com/grahambrooks/symgraph) MCP server, launched on-demand by [bx](https://github.com/grahambrooks/bx). Ships the `explore-code` skill and a SessionStart hook that auto-indexes new projects.
+- [code-intelligence](plugins/code-intelligence/README.md): Semantic code intelligence via the [symgraph](https://github.com/grahambrooks/symgraph) MCP server, launched on-demand by [bx](https://github.com/grahambrooks/bx). Ships the `explore-code` skill and a SessionStart hook that auto-indexes new projects.
 
 ## Development
 
@@ -33,11 +37,3 @@ Update plugin documentation and website:
 ```bash
 make update
 ```
-
-## Documentation
-
-Visit the [documentation site](https://grahambrooks.github.io/gb-agent-skills) for more information.
-
-## License
-
-MIT
