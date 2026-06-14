@@ -60,7 +60,7 @@ Claude Code
 
 ## Index lifecycle
 
-- **First session:** background index runs. Symgraph queries may return empty until it finishes — check `.symgraph-index.log` in the project root for progress.
+- **First session:** background index runs. Symgraph queries may return empty until it finishes — check `index.log` beside the index (run `symgraph where` to locate it) for progress.
 - **Subsequent sessions:** index already present, hook is a no-op.
 - **After large edits:** use the `symgraph-reindex` MCP tool (incremental, fast). For structural changes, re-run `bx grahambrooks/symgraph index` manually.
 
@@ -69,6 +69,6 @@ Claude Code
 | Symptom | Fix |
 |---|---|
 | `bx: command not found` | Install `bx` (see Prerequisites). |
-| `symgraph-status` reports 0 nodes | First-time index hasn't finished — check `.symgraph-index.log`. |
+| `symgraph-status` reports 0 nodes | First-time index hasn't finished — check `index.log` beside the index (`symgraph where`). |
 | Stale results after edits | Run the `symgraph-reindex` MCP tool, or `bx grahambrooks/symgraph index` for a full rebuild. |
 | Want a specific symgraph version | Edit `.mcp.json` and pin: `"args": ["grahambrooks/symgraph@v2026.4.13", "serve"]`. |
