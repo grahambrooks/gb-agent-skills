@@ -1,0 +1,31 @@
+plugins/code-intelligence/skills/explore-code/SKILL.md
+  s_88b061a5ac6e77::t_43a92317d228ae 3,5,8,10,12-46,50,55,60,63-67,71-81,85-90,94-96
+docs/data.json
+  s_88b061a5ac6e77::t_f1a8ba05d7447c 14
+.claude-plugin/marketplace.json
+  s_a4378999ddf52f::t_1a32d1e25776ac 3-4,12-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "f8c2238f068ed648430dffe0bf8d8f52d19ebe88",
+  "prompts": {},
+  "sessions": {
+    "s_88b061a5ac6e77": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "685eca4c-12eb-448d-bb7c-861df6050cdd",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Graham Brooks <graham@grahambrooks.com>"
+    },
+    "s_a4378999ddf52f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ff6b3b84-c18c-4965-ac10-28055841bb22",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Graham Brooks <graham@grahambrooks.com>"
+    }
+  }
+}
