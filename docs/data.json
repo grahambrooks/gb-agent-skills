@@ -11,7 +11,7 @@
         {
           "name": "explore-code",
           "id": "explore-code",
-          "description": "Use symgraph MCP tools to explore and understand code. Use when the user asks about code structure, symbol relationships, call graphs, impact analysis, dead code, interface implementations, or needs focused context for a coding task."
+          "description": "Use symgraph MCP tools to explore, understand, and safely refactor code. Use whenever you need to locate a symbol, find who calls or references something, trace call paths, assess the blast radius of an edit, find dead code or interface implementations, or build focused context for a coding task. Prefer this over grep/find/ripgrep and over reading whole files when the target is a symbol or a relationship between symbols."
         }
       ],
       "hooks": [
