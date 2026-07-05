@@ -1,0 +1,25 @@
+plugins/code-intelligence/.claude-plugin/plugin.json
+  s_4aec305958fc74::t_0ee77cabc59208 4
+.claude-plugin/marketplace.json
+  s_4aec305958fc74::t_7ef67c86abfa0e 13
+docs/data.json
+  s_4aec305958fc74::t_bbcb0017a35029 8
+plugins/code-intelligence/skills/explore-code/SKILL.md
+  s_4aec305958fc74::t_8fb0ac5766f7ec 95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "307a7c60fe9b755467912a208f02fb743c91514f",
+  "prompts": {},
+  "sessions": {
+    "s_4aec305958fc74": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "766ce804-70a1-4d20-a635-1eb421c4862d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": null
+    }
+  }
+}
