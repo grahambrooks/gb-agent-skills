@@ -1,0 +1,14 @@
+plugins/code-intelligence/.mcp.json
+  h_37b3b27dede911 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "fb8d9aa55d1d2456fc25a25e1c2264d084672120",
+  "prompts": {},
+  "humans": {
+    "h_37b3b27dede911": {
+      "author": "Graham Brooks <graham@grahambrooks.com>"
+    }
+  }
+}
