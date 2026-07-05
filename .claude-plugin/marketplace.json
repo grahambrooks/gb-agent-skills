@@ -10,7 +10,7 @@
       "name": "code-intelligence",
       "source": "./plugins/code-intelligence",
       "description": "Semantic code intelligence via the symgraph MCP server, launched on-demand by bx.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "author": {
         "name": "Graham Brooks"
       },

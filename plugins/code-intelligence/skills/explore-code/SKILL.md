@@ -92,5 +92,5 @@ Coupling/module tools rely on field, import, and dispatch edges, so **run `symgr
 ## Index hygiene
 
 - A project must be indexed before symgraph can answer. The plugin's SessionStart hook kicks off a first-time index via `bx grahambrooks/symgraph index`.
-- If `symgraph-status` reports 0 nodes, or `symgraph-search` returns nothing for symbols you know exist, the index is missing/unfinished — tell the user to run `bx grahambrooks/symgraph index` in the project root (or check `.symgraph-index.log` for progress).
+- If `symgraph-status` reports 0 nodes, or `symgraph-search` returns nothing for symbols you know exist, the index is missing/unfinished — tell the user to run `bx grahambrooks/symgraph index` in the project root (progress is logged to `index.log` beside the index, e.g. `<git-common-dir>/symgraph/index.log`).
 - After edits, run `symgraph-reindex` (incremental, fast). This is required before re-trusting `references`, `impact`, and the coupling/module tools. Full re-index only when structure changed dramatically.
