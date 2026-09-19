@@ -7,8 +7,9 @@ Sync tool-owned skills into this marketplace's plugins, as declared in tools.tom
 
 Per tool, `skills`/`skill` (skill directories), `commands` (a directory of
 slash-command .md files) and `mcp` (a server launched through bx at the pinned
-ref; `bin` names the binary when it is not named after the repo) are each
-optional. A top-level `requires_github_token = true` (private marketplaces)
+ref; `bin` names the binary when it is not named after the repo) and `lsp` (a
+language server, same launch fields plus `extensions`, mapping file extensions
+to language ids for .lsp.json) are each optional. A top-level `requires_github_token = true` (private marketplaces)
 makes the generated SessionStart hook also warn when bx has no GITHUB_TOKEN to
 fetch private releases with.
 
@@ -79,14 +80,22 @@ def load_manifest() -> list:
         for t in p.get("tool", []):
             if "skills" in t and "skill" in t:
                 sys.exit(f"tools.toml: {p['name']}/{t['repo']}: set one of `skills` or `skill`, not both")
-            if not any(k in t for k in ("skills", "skill", "commands", "mcp")):
-                sys.exit(f"tools.toml: {p['name']}/{t['repo']}: provides nothing (no skills, commands or mcp)")
+            if not any(k in t for k in ("skills", "skill", "commands", "mcp", "lsp")):
+                sys.exit(f"tools.toml: {p['name']}/{t['repo']}: provides nothing (no skills, commands, mcp or lsp)")
+            if "lsp" in t and not t["lsp"].get("extensions"):
+                sys.exit(f"tools.toml: {p['name']}/{t['repo']}: lsp needs `extensions`")
     return plugins
 
 
 def tool_key(t: dict) -> dict:
     """The manifest fields a lock entry must agree with."""
-    return {k: t[k] for k in ("repo", "ref", "skills", "skill", "commands", "mcp") if k in t}
+    return {k: t[k] for k in ("repo", "ref", "skills", "skill", "commands", "mcp", "lsp") if k in t}
+
+
+def bx_args(t: dict, launch: dict) -> list:
+    """bx arguments that run this tool's binary from its pinned release."""
+    spec = f"{OWNER}/{t['repo']}@{t['ref']}" + (f"#{launch['bin']}" if launch.get("bin") else "")
+    return [spec, "--", *launch.get("args", [])]
 
 
 def fetch(repo: str, ref: str, paths: list, dest: Path) -> Path:
@@ -151,14 +160,15 @@ def sync() -> None:
         pdir = ROOT / "plugins" / name
         tools = plugin.get("tool", [])
         servers = [t["mcp"]["server"] for t in tools if "mcp" in t]
+        lsp_servers = [t["lsp"]["server"] for t in tools if "lsp" in t]
         files: dict[str, bytes] = {}
 
         for t in tools:
             src_path = t.get("skills") or t.get("skill")
             paths = [p for p in (src_path, t.get("commands")) if p]
             if not paths:
-                continue  # MCP only
-            with tempfile.TemporaryDirectory() as tmp:
+                continue  # MCP / LSP only
+            with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
                 root = fetch(t["repo"], t["ref"], paths, Path(tmp))
                 if "commands" in t:
                     cmds = sorted((root / t["commands"]).glob("*.md"))
@@ -190,17 +200,20 @@ def sync() -> None:
 
         if servers:
             mcp = {"mcpServers": {
-                t["mcp"]["server"]: {
-                    "type": "stdio",
-                    "command": "bx",
-                    "args": [f"{OWNER}/{t['repo']}@{t['ref']}" + (f"#{t['mcp']['bin']}" if t["mcp"].get("bin") else ""),
-                             "--", *t["mcp"].get("args", [])],
-                }
+                t["mcp"]["server"]: {"type": "stdio", "command": "bx", "args": bx_args(t, t["mcp"])}
                 for t in tools if "mcp" in t
             }}
             files[".mcp.json"] = (json.dumps(mcp, indent=2) + "\n").encode()
+        if lsp_servers:
+            lsp = {
+                t["lsp"]["server"]: {"command": "bx", "args": bx_args(t, t["lsp"]),
+                                     "extensionToLanguage": t["lsp"]["extensions"]}
+                for t in tools if "lsp" in t
+            }
+            files[".lsp.json"] = (json.dumps(lsp, indent=2) + "\n").encode()
+        if servers or lsp_servers:
             files["hooks/hooks.json"] = (json.dumps(HOOKS_JSON, indent=2) + "\n").encode()
-            listed = ", ".join(servers)
+            listed = ", ".join(servers + lsp_servers)
             token_check = TOKEN_CHECK.format(plugin=name, servers=listed) if settings.get("requires_github_token") else ""
             files["hooks/check-bx.sh"] = CHECK_BX.format(plugin=name, servers=listed, token_check=token_check).encode()
 
