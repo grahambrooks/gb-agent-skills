@@ -26,8 +26,10 @@ rules:
   command-frontmatter:
     enabled: true
     severity: error
+  # Off: commands synced from tool repos keep their upstream format; Claude Code
+  # does not need the template's Name/Synopsis/Description/Implementation sections.
   command-sections:
-    enabled: true
+    enabled: false
     severity: warning
   command-name-format:
     enabled: true

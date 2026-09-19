@@ -5,6 +5,13 @@ Sync tool-owned skills into this marketplace's plugins, as declared in tools.tom
     python3 scripts/sync_tool_skills.py          # fetch at the pinned refs, write plugins + tools.lock.json
     python3 scripts/sync_tool_skills.py --check  # offline: verify plugins match tools.lock.json and tools.toml
 
+Per tool, `skills`/`skill` (skill directories), `commands` (a directory of
+slash-command .md files) and `mcp` (a server launched through bx at the pinned
+ref; `bin` names the binary when it is not named after the repo) are each
+optional. A top-level `requires_github_token = true` (private marketplaces)
+makes the generated SessionStart hook also warn when bx has no GITHUB_TOKEN to
+fetch private releases with.
+
 Sources are read from a local checkout (~/dev/projects/<repo>, or $TOOLS_SRC/<repo>) when it
 has the pinned ref, otherwise from a shallow clone of github.com/grahambrooks/<repo>.
 --check never touches the network; it is what the lint rule runs.
@@ -37,7 +44,15 @@ if ! command -v bx >/dev/null 2>&1; then
 Install bx:  brew install grahambrooks/bx/bx   (or: cargo install --git https://github.com/grahambrooks/bx)
 EOF
 fi
-exit 0
+{token_check}exit 0
+"""
+
+TOKEN_CHECK = """if [ -z "${{GITHUB_TOKEN:-}}" ]; then
+  cat <<'EOF' >&2
+[{plugin}] GITHUB_TOKEN is not set; bx cannot download these private releases ({servers}).
+Export one before starting Claude Code, e.g.  export GITHUB_TOKEN=$(gh auth token)
+EOF
+fi
 """
 
 HOOKS_JSON = {
@@ -53,23 +68,29 @@ def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def load_manifest() -> list:
+def load_settings() -> dict:
     with MANIFEST.open("rb") as f:
-        plugins = tomllib.load(f).get("plugin", [])
+        return tomllib.load(f)
+
+
+def load_manifest() -> list:
+    plugins = load_settings().get("plugin", [])
     for p in plugins:
         for t in p.get("tool", []):
-            if ("skills" in t) == ("skill" in t) and ("skills" in t or "skill" in t):
+            if "skills" in t and "skill" in t:
                 sys.exit(f"tools.toml: {p['name']}/{t['repo']}: set one of `skills` or `skill`, not both")
+            if not any(k in t for k in ("skills", "skill", "commands", "mcp")):
+                sys.exit(f"tools.toml: {p['name']}/{t['repo']}: provides nothing (no skills, commands or mcp)")
     return plugins
 
 
 def tool_key(t: dict) -> dict:
     """The manifest fields a lock entry must agree with."""
-    return {k: t[k] for k in ("repo", "ref", "skills", "skill", "mcp") if k in t}
+    return {k: t[k] for k in ("repo", "ref", "skills", "skill", "commands", "mcp") if k in t}
 
 
-def fetch(repo: str, ref: str, path: str, dest: Path) -> Path:
-    """Materialise `path` from grahambrooks/<repo> at `ref` under dest; return that directory."""
+def fetch(repo: str, ref: str, paths: list, dest: Path) -> Path:
+    """Materialise `paths` from grahambrooks/<repo> at `ref` under dest; return the checkout root."""
     local = SRC_ROOT / repo
     has_ref = local.is_dir() and subprocess.run(
         ["git", "-C", str(local), "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"],
@@ -77,20 +98,21 @@ def fetch(repo: str, ref: str, path: str, dest: Path) -> Path:
     ).returncode == 0
     if has_ref:
         archive = subprocess.run(
-            ["git", "-C", str(local), "archive", "--format=tar", ref, "--", path],
+            ["git", "-C", str(local), "archive", "--format=tar", ref, "--", *paths],
             capture_output=True, check=True,
         ).stdout
         tar_path = dest / "src.tar"
         tar_path.write_bytes(archive)
         with tarfile.open(tar_path) as tf:
             tf.extractall(dest / "src", filter="data")
-        return dest / "src" / path
+        return dest / "src"
+    # SSH, so private repositories clone with the same credentials as a push.
     subprocess.run(
-        ["git", "clone", "--quiet", "--depth", "1", "--branch", ref,
-         f"https://github.com/{OWNER}/{repo}.git", str(dest / "src")],
+        ["git", "-c", "advice.detachedHead=false", "clone", "--quiet", "--depth", "1", "--branch", ref,
+         f"git@github.com:{OWNER}/{repo}.git", str(dest / "src")],
         check=True,
     )
-    return dest / "src" / path
+    return dest / "src"
 
 
 def frontmatter_name(skill_md: Path) -> str:
@@ -101,7 +123,7 @@ def frontmatter_name(skill_md: Path) -> str:
     return name.group(1).strip().strip("\"'")
 
 
-def adapt_skill_md(text: str, plugin: str, servers: list, origin: str) -> str:
+def adapt_md(text: str, plugin: str, servers: list, origin: str) -> str:
     """Point allowed-tools at the plugin-scoped MCP tool names and stamp provenance."""
     m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
     if not m:
@@ -115,6 +137,7 @@ def adapt_skill_md(text: str, plugin: str, servers: list, origin: str) -> str:
 
 def sync() -> None:
     lock = {"plugins": {}}
+    settings = load_settings()
     manifest = load_manifest()
     # A plugin dropped from tools.toml loses its synced files; hand-authored ones stay.
     previous = json.loads(LOCK.read_text()).get("plugins", {}) if LOCK.exists() else {}
@@ -131,9 +154,25 @@ def sync() -> None:
         files: dict[str, bytes] = {}
 
         for t in tools:
-            src_path = t.get("skills") or t["skill"]
+            src_path = t.get("skills") or t.get("skill")
+            paths = [p for p in (src_path, t.get("commands")) if p]
+            if not paths:
+                continue  # MCP only
             with tempfile.TemporaryDirectory() as tmp:
-                src = fetch(t["repo"], t["ref"], src_path, Path(tmp))
+                root = fetch(t["repo"], t["ref"], paths, Path(tmp))
+                if "commands" in t:
+                    cmds = sorted((root / t["commands"]).glob("*.md"))
+                    if not cmds:
+                        sys.exit(f"{t['repo']}@{t['ref']}:{t['commands']}: no commands found")
+                    for f in cmds:
+                        rel = f"commands/{f.name}"
+                        if rel in files:
+                            sys.exit(f"plugin {name}: two tools both provide {rel}")
+                        origin = f"{OWNER}/{t['repo']}@{t['ref']} ({t['commands']}/{f.name})"
+                        files[rel] = adapt_md(f.read_text(), name, servers, origin).encode()
+                if not src_path:
+                    continue
+                src = root / src_path
                 skill_dirs = [src] if "skill" in t else sorted(d for d in src.iterdir() if (d / "SKILL.md").is_file())
                 if not skill_dirs:
                     sys.exit(f"{t['repo']}@{t['ref']}:{src_path}: no skills found")
@@ -146,7 +185,7 @@ def sync() -> None:
                             sys.exit(f"plugin {name}: two tools both provide {rel}")
                         data = f.read_bytes()
                         if f.name == "SKILL.md":
-                            data = adapt_skill_md(data.decode(), name, servers, origin).encode()
+                            data = adapt_md(data.decode(), name, servers, origin).encode()
                         files[rel] = data
 
         if servers:
@@ -154,13 +193,16 @@ def sync() -> None:
                 t["mcp"]["server"]: {
                     "type": "stdio",
                     "command": "bx",
-                    "args": [f"{OWNER}/{t['repo']}@{t['ref']}", "--", *t["mcp"].get("args", [])],
+                    "args": [f"{OWNER}/{t['repo']}@{t['ref']}" + (f"#{t['mcp']['bin']}" if t["mcp"].get("bin") else ""),
+                             "--", *t["mcp"].get("args", [])],
                 }
                 for t in tools if "mcp" in t
             }}
             files[".mcp.json"] = (json.dumps(mcp, indent=2) + "\n").encode()
             files["hooks/hooks.json"] = (json.dumps(HOOKS_JSON, indent=2) + "\n").encode()
-            files["hooks/check-bx.sh"] = CHECK_BX.format(plugin=name, servers=", ".join(servers)).encode()
+            listed = ", ".join(servers)
+            token_check = TOKEN_CHECK.format(plugin=name, servers=listed) if settings.get("requires_github_token") else ""
+            files["hooks/check-bx.sh"] = CHECK_BX.format(plugin=name, servers=listed, token_check=token_check).encode()
 
         # Replace everything this plugin previously had synced, then write the new set.
         for rel in lock_files(name):
