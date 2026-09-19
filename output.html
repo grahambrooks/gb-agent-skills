@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>rv — Interactive Directory Visualization</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+  #container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  /* Search bar */
+  #search-bar {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #search-input {
+    background: rgba(26, 26, 46, 0.92);
+    border: 1px solid #404060;
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 8px 14px;
+    width: 320px;
+    outline: none;
+    backdrop-filter: blur(8px);
+  }
+  #search-input:focus {
+    border-color: #6c63ff;
+    box-shadow: 0 0 0 2px rgba(108,99,255,0.25);
+  }
+  #search-input::placeholder {
+    color: #666;
+  }
+  #search-count {
+    font-size: 12px;
+    color: #888;
+    min-width: 60px;
+  }
+  /* Tooltip */
+  #tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: rgba(20, 20, 40, 0.95);
+    border: 1px solid #505070;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #e0e0e0;
+    max-width: 400px;
+    z-index: 200;
+    display: none;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  #tooltip .tt-name {
+    font-weight: bold;
+    font-size: 13px;
+    color: #fff;
+    margin-bottom: 2px;
+  }
+  #tooltip .tt-path {
+    color: #888;
+    font-size: 11px;
+    word-break: break-all;
+  }
+  #tooltip .tt-detail {
+    margin-top: 4px;
+    color: #aaa;
+  }
+  #tooltip .tt-detail span {
+    color: #ccc;
+  }
+  #tooltip .tt-hint {
+    margin-top: 6px;
+    font-size: 10px;
+    color: #666;
+    font-style: italic;
+  }
+  /* Controls help */
+  #controls-help {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    z-index: 100;
+    font-size: 11px;
+    color: #555;
+    background: rgba(26,26,46,0.85);
+    border: 1px solid #303050;
+    border-radius: 6px;
+    padding: 8px 12px;
+    line-height: 1.7;
+    backdrop-filter: blur(8px);
+  }
+  #controls-help kbd {
+    background: #2a2a4a;
+    border: 1px solid #404060;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 10px;
+    color: #999;
+  }
+  /* SVG styles */
+  .edge { stroke: #7878a0; stroke-width: 1.5; stroke-opacity: 0.8; }
+  .edge.highlighted { stroke: #6c63ff; stroke-width: 2.5; stroke-opacity: 1; }
+  .edge.dimmed { stroke-opacity: 0.08; }
+  .node { stroke: #fff; stroke-width: 1; stroke-opacity: 0.3; cursor: pointer; transition: stroke-opacity 0.15s; }
+  .node:hover { stroke-opacity: 0.8; stroke-width: 2; }
+  .node.highlighted { stroke: #6c63ff; stroke-width: 2.5; stroke-opacity: 1; filter: drop-shadow(0 0 6px rgba(108,99,255,0.5)); }
+  .node.search-match { stroke: #ffeb3b; stroke-width: 3; stroke-opacity: 1; filter: drop-shadow(0 0 8px rgba(255,235,59,0.6)); }
+  .node.dimmed { opacity: 0.15; }
+  .node.collapsed-dir { stroke: #ff5722; stroke-width: 2; stroke-dasharray: 3,2; stroke-opacity: 0.8; }
+  .label, .dir-label { font-family: monospace; pointer-events: none; }
+  .label { font-size: 10px; fill: #e0e0e0; }
+  .dir-label { font-size: 11px; fill: #fff; font-weight: bold; }
+  .label.dimmed, .dir-label.dimmed { opacity: 0.1; }
+  .legend-text { font-family: monospace; font-size: 11px; fill: #ccc; }
+</style>
+</head>
+<body>
+
+<div id="search-bar">
+  <input id="search-input" type="text" placeholder="Search files… (Ctrl+F)" autocomplete="off"/>
+  <span id="search-count"></span>
+</div>
+
+<div id="tooltip"></div>
+
+<div id="controls-help">
+  <kbd>Scroll</kbd> Zoom &nbsp; <kbd>Drag</kbd> Pan &nbsp; <kbd>Drag node</kbd> Move &nbsp; <kbd>Click dir</kbd> Collapse/Expand &nbsp; <kbd>Ctrl+F</kbd> Search &nbsp; <kbd>Esc</kbd> Reset
+</div>
+
+<div id="container">
+<svg id="graph-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <rect width="100%" height="100%" fill="#1a1a2e"/>
+  <g id="pan-zoom-group">
+    <g id="edges-group">
+<line class="edge" x1="523.7" y1="259.5" x2="554.4" y2="245.2" data-from="0" data-to="1" data-idx="0"/>
+<line class="edge" x1="523.7" y1="259.5" x2="472.7" y2="229.6" data-from="0" data-to="2" data-idx="1"/>
+<line class="edge" x1="523.7" y1="259.5" x2="476.9" y2="265.3" data-from="0" data-to="3" data-idx="2"/>
+<line class="edge" x1="523.7" y1="259.5" x2="511.8" y2="291.4" data-from="0" data-to="4" data-idx="3"/>
+<line class="edge" x1="523.7" y1="259.5" x2="353.9" y2="332.9" data-from="0" data-to="5" data-idx="4"/>
+<line class="edge" x1="353.9" y1="332.9" x2="414.7" y2="444.0" data-from="5" data-to="6" data-idx="5"/>
+<line class="edge" x1="414.7" y1="444.0" x2="381.0" y2="428.5" data-from="6" data-to="7" data-idx="6"/>
+<line class="edge" x1="414.7" y1="444.0" x2="430.6" y2="411.2" data-from="6" data-to="8" data-idx="7"/>
+<line class="edge" x1="414.7" y1="444.0" x2="487.7" y2="442.0" data-from="6" data-to="9" data-idx="8"/>
+<line class="edge" x1="487.7" y1="442.0" x2="527.8" y2="465.4" data-from="9" data-to="10" data-idx="9"/>
+<line class="edge" x1="487.7" y1="442.0" x2="520.1" y2="422.1" data-from="9" data-to="11" data-idx="10"/>
+<line class="edge" x1="414.7" y1="444.0" x2="445.2" y2="470.6" data-from="6" data-to="12" data-idx="11"/>
+<line class="edge" x1="445.2" y1="470.6" x2="473.8" y2="494.5" data-from="12" data-to="13" data-idx="12"/>
+<line class="edge" x1="414.7" y1="444.0" x2="397.0" y2="569.5" data-from="6" data-to="14" data-idx="13"/>
+<line class="edge" x1="397.0" y1="569.5" x2="468.0" y2="564.8" data-from="14" data-to="15" data-idx="14"/>
+<line class="edge" x1="468.0" y1="564.8" x2="526.4" y2="554.9" data-from="15" data-to="16" data-idx="15"/>
+<line class="edge" x1="526.4" y1="554.9" x2="567.2" y2="554.4" data-from="16" data-to="17" data-idx="16"/>
+<line class="edge" x1="468.0" y1="564.8" x2="494.2" y2="586.2" data-from="15" data-to="18" data-idx="17"/>
+<line class="edge" x1="397.0" y1="569.5" x2="355.8" y2="569.3" data-from="14" data-to="19" data-idx="18"/>
+<line class="edge" x1="355.8" y1="569.3" x2="320.8" y2="553.4" data-from="19" data-to="20" data-idx="19"/>
+<line class="edge" x1="397.0" y1="569.5" x2="378.0" y2="633.4" data-from="14" data-to="21" data-idx="20"/>
+<line class="edge" x1="378.0" y1="633.4" x2="377.1" y2="683.5" data-from="21" data-to="22" data-idx="21"/>
+<line class="edge" x1="377.1" y1="683.5" x2="366.9" y2="720.0" data-from="22" data-to="23" data-idx="22"/>
+<line class="edge" x1="378.0" y1="633.4" x2="344.6" y2="651.4" data-from="21" data-to="24" data-idx="23"/>
+<line class="edge" x1="397.0" y1="569.5" x2="449.1" y2="625.3" data-from="14" data-to="25" data-idx="24"/>
+<line class="edge" x1="449.1" y1="625.3" x2="503.9" y2="653.0" data-from="25" data-to="26" data-idx="25"/>
+<line class="edge" x1="503.9" y1="653.0" x2="545.9" y2="647.1" data-from="26" data-to="27" data-idx="26"/>
+<line class="edge" x1="503.9" y1="653.0" x2="516.7" y2="690.1" data-from="26" data-to="28" data-idx="27"/>
+<line class="edge" x1="449.1" y1="625.3" x2="446.9" y2="662.5" data-from="25" data-to="29" data-idx="28"/>
+<line class="edge" x1="397.0" y1="569.5" x2="379.9" y2="527.1" data-from="14" data-to="30" data-idx="29"/>
+<line class="edge" x1="379.9" y1="527.1" x2="348.1" y2="497.8" data-from="30" data-to="31" data-idx="30"/>
+<line class="edge" x1="348.1" y1="497.8" x2="321.1" y2="475.1" data-from="31" data-to="32" data-idx="31"/>
+<line class="edge" x1="379.9" y1="527.1" x2="410.7" y2="516.6" data-from="30" data-to="33" data-idx="32"/>
+<line class="edge" x1="397.0" y1="569.5" x2="310.8" y2="603.1" data-from="14" data-to="34" data-idx="33"/>
+<line class="edge" x1="310.8" y1="603.1" x2="267.7" y2="636.0" data-from="34" data-to="35" data-idx="34"/>
+<line class="edge" x1="267.7" y1="636.0" x2="232.1" y2="652.0" data-from="35" data-to="36" data-idx="35"/>
+<line class="edge" x1="310.8" y1="603.1" x2="272.2" y2="588.9" data-from="34" data-to="37" data-idx="36"/>
+<line class="edge" x1="353.9" y1="332.9" x2="233.3" y2="418.5" data-from="5" data-to="38" data-idx="37"/>
+<line class="edge" x1="233.3" y1="418.5" x2="268.5" y2="416.1" data-from="38" data-to="39" data-idx="38"/>
+<line class="edge" x1="233.3" y1="418.5" x2="202.8" y2="430.7" data-from="38" data-to="40" data-idx="39"/>
+<line class="edge" x1="233.3" y1="418.5" x2="163.9" y2="478.5" data-from="38" data-to="41" data-idx="40"/>
+<line class="edge" x1="163.9" y1="478.5" x2="124.2" y2="466.6" data-from="41" data-to="42" data-idx="41"/>
+<line class="edge" x1="163.9" y1="478.5" x2="125.9" y2="510.1" data-from="41" data-to="43" data-idx="42"/>
+<line class="edge" x1="163.9" y1="478.5" x2="168.5" y2="520.3" data-from="41" data-to="44" data-idx="43"/>
+<line class="edge" x1="233.3" y1="418.5" x2="238.2" y2="466.4" data-from="38" data-to="45" data-idx="44"/>
+<line class="edge" x1="238.2" y1="466.4" x2="235.3" y2="503.9" data-from="45" data-to="46" data-idx="45"/>
+<line class="edge" x1="233.3" y1="418.5" x2="167.3" y2="402.5" data-from="38" data-to="47" data-idx="46"/>
+<line class="edge" x1="167.3" y1="402.5" x2="118.5" y2="394.0" data-from="47" data-to="48" data-idx="47"/>
+<line class="edge" x1="118.5" y1="394.0" x2="80.0" y2="388.5" data-from="48" data-to="49" data-idx="48"/>
+<line class="edge" x1="353.9" y1="332.9" x2="234.0" y2="268.0" data-from="5" data-to="50" data-idx="49"/>
+<line class="edge" x1="234.0" y1="268.0" x2="208.0" y2="244.5" data-from="50" data-to="51" data-idx="50"/>
+<line class="edge" x1="234.0" y1="268.0" x2="252.3" y2="234.1" data-from="50" data-to="52" data-idx="51"/>
+<line class="edge" x1="234.0" y1="268.0" x2="215.5" y2="312.8" data-from="50" data-to="53" data-idx="52"/>
+<line class="edge" x1="215.5" y1="312.8" x2="181.7" y2="333.8" data-from="53" data-to="54" data-idx="53"/>
+<line class="edge" x1="215.5" y1="312.8" x2="231.5" y2="344.5" data-from="53" data-to="55" data-idx="54"/>
+<line class="edge" x1="234.0" y1="268.0" x2="172.8" y2="278.1" data-from="50" data-to="56" data-idx="55"/>
+<line class="edge" x1="172.8" y1="278.1" x2="131.8" y2="289.6" data-from="56" data-to="57" data-idx="56"/>
+<line class="edge" x1="234.0" y1="268.0" x2="189.1" y2="188.2" data-from="50" data-to="58" data-idx="57"/>
+<line class="edge" x1="189.1" y1="188.2" x2="154.5" y2="157.4" data-from="58" data-to="59" data-idx="58"/>
+<line class="edge" x1="154.5" y1="157.4" x2="163.3" y2="104.4" data-from="59" data-to="60" data-idx="59"/>
+<line class="edge" x1="189.1" y1="188.2" x2="179.0" y2="142.4" data-from="58" data-to="61" data-idx="60"/>
+<line class="edge" x1="179.0" y1="142.4" x2="129.7" y2="125.1" data-from="61" data-to="62" data-idx="61"/>
+<line class="edge" x1="189.1" y1="188.2" x2="230.6" y2="151.7" data-from="58" data-to="63" data-idx="62"/>
+<line class="edge" x1="230.6" y1="151.7" x2="254.1" y2="118.6" data-from="63" data-to="64" data-idx="63"/>
+<line class="edge" x1="189.1" y1="188.2" x2="136.9" y2="208.4" data-from="58" data-to="65" data-idx="64"/>
+<line class="edge" x1="136.9" y1="208.4" x2="97.3" y2="219.6" data-from="65" data-to="66" data-idx="65"/>
+<line class="edge" x1="353.9" y1="332.9" x2="320.5" y2="310.1" data-from="5" data-to="67" data-idx="66"/>
+<line class="edge" x1="320.5" y1="310.1" x2="311.9" y2="350.9" data-from="67" data-to="68" data-idx="67"/>
+<line class="edge" x1="320.5" y1="310.1" x2="287.6" y2="307.6" data-from="67" data-to="69" data-idx="68"/>
+<line class="edge" x1="320.5" y1="310.1" x2="313.8" y2="258.3" data-from="67" data-to="70" data-idx="69"/>
+<line class="edge" x1="313.8" y1="258.3" x2="310.7" y2="216.2" data-from="70" data-to="71" data-idx="70"/>
+<line class="edge" x1="353.9" y1="332.9" x2="381.9" y2="273.4" data-from="5" data-to="72" data-idx="71"/>
+<line class="edge" x1="381.9" y1="273.4" x2="366.4" y2="239.9" data-from="72" data-to="73" data-idx="72"/>
+<line class="edge" x1="381.9" y1="273.4" x2="400.6" y2="306.8" data-from="72" data-to="74" data-idx="73"/>
+<line class="edge" x1="400.6" y1="306.8" x2="412.0" y2="340.8" data-from="74" data-to="75" data-idx="74"/>
+<line class="edge" x1="381.9" y1="273.4" x2="406.3" y2="218.1" data-from="72" data-to="76" data-idx="75"/>
+<line class="edge" x1="406.3" y1="218.1" x2="436.0" y2="179.1" data-from="76" data-to="77" data-idx="76"/>
+<line class="edge" x1="436.0" y1="179.1" x2="470.3" y2="146.7" data-from="77" data-to="78" data-idx="77"/>
+<line class="edge" x1="523.7" y1="259.5" x2="547.3" y2="320.5" data-from="0" data-to="79" data-idx="78"/>
+<line class="edge" x1="523.7" y1="259.5" x2="510.2" y2="194.8" data-from="0" data-to="80" data-idx="79"/>
+<line class="edge" x1="523.7" y1="259.5" x2="547.4" y2="207.4" data-from="0" data-to="81" data-idx="80"/>
+<line class="edge" x1="523.7" y1="259.5" x2="432.8" y2="131.3" data-from="0" data-to="82" data-idx="81"/>
+<line class="edge" x1="432.8" y1="131.3" x2="416.5" y2="80.0" data-from="82" data-to="83" data-idx="82"/>
+<line class="edge" x1="432.8" y1="131.3" x2="383.9" y2="103.3" data-from="82" data-to="84" data-idx="83"/>
+<line class="edge" x1="432.8" y1="131.3" x2="456.1" y2="90.6" data-from="82" data-to="85" data-idx="84"/>
+<line class="edge" x1="432.8" y1="131.3" x2="392.1" y2="141.8" data-from="82" data-to="86" data-idx="85"/>
+<line class="edge" x1="523.7" y1="259.5" x2="475.3" y2="302.0" data-from="0" data-to="87" data-idx="86"/>
+<line class="edge" x1="523.7" y1="259.5" x2="509.2" y2="230.5" data-from="0" data-to="88" data-idx="87"/>
+<line class="edge" x1="523.7" y1="259.5" x2="586.5" y2="230.3" data-from="0" data-to="89" data-idx="88"/>
+<line class="edge" x1="523.7" y1="259.5" x2="644.5" y2="282.5" data-from="0" data-to="90" data-idx="89"/>
+<line class="edge" x1="644.5" y1="282.5" x2="663.7" y2="244.4" data-from="90" data-to="91" data-idx="90"/>
+<line class="edge" x1="644.5" y1="282.5" x2="688.9" y2="314.0" data-from="90" data-to="92" data-idx="91"/>
+<line class="edge" x1="644.5" y1="282.5" x2="693.9" y2="272.6" data-from="90" data-to="93" data-idx="92"/>
+<line class="edge" x1="644.5" y1="282.5" x2="649.0" y2="322.6" data-from="90" data-to="94" data-idx="93"/>
+<line class="edge" x1="523.7" y1="259.5" x2="580.1" y2="163.6" data-from="0" data-to="95" data-idx="94"/>
+<line class="edge" x1="580.1" y1="163.6" x2="624.4" y2="161.3" data-from="95" data-to="96" data-idx="95"/>
+<line class="edge" x1="580.1" y1="163.6" x2="561.9" y2="122.5" data-from="95" data-to="97" data-idx="96"/>
+<line class="edge" x1="580.1" y1="163.6" x2="605.5" y2="121.3" data-from="95" data-to="98" data-idx="97"/>
+<line class="edge" x1="523.7" y1="259.5" x2="584.2" y2="348.5" data-from="0" data-to="99" data-idx="98"/>
+<line class="edge" x1="584.2" y1="348.5" x2="624.4" y2="401.7" data-from="99" data-to="100" data-idx="99"/>
+<line class="edge" x1="624.4" y1="401.7" x2="665.0" y2="414.5" data-from="100" data-to="101" data-idx="100"/>
+<line class="edge" x1="624.4" y1="401.7" x2="627.8" y2="443.3" data-from="100" data-to="102" data-idx="101"/>
+<line class="edge" x1="523.7" y1="259.5" x2="508.4" y2="329.7" data-from="0" data-to="103" data-idx="102"/>
+<line class="edge" x1="523.7" y1="259.5" x2="585.4" y2="276.1" data-from="0" data-to="104" data-idx="103"/>
+<line class="edge" x1="523.7" y1="259.5" x2="552.0" y2="286.1" data-from="0" data-to="105" data-idx="104"/>
+
+    </g>
+    <g id="nodes-group">
+<circle class="node" cx="523.7" cy="259.5" r="8.0" fill="#4CAF50" data-id="0" data-is-dir="true"/>
+<circle class="node" cx="554.4" cy="245.2" r="10.8" fill="#9E9E9E" data-id="1" data-is-dir="false"/>
+<circle class="node" cx="472.7" cy="229.6" r="13.5" fill="#3F51B5" data-id="2" data-is-dir="false"/>
+<circle class="node" cx="476.9" cy="265.3" r="8.0" fill="#BDBDBD" data-id="3" data-is-dir="false"/>
+<circle class="node" cx="511.8" cy="291.4" r="11.3" fill="#9C27B0" data-id="4" data-is-dir="false"/>
+<circle class="node" cx="353.9" cy="332.9" r="8.0" fill="#4CAF50" data-id="5" data-is-dir="true"/>
+<circle class="node" cx="414.7" cy="444.0" r="8.0" fill="#4CAF50" data-id="6" data-is-dir="true"/>
+<circle class="node" cx="381.0" cy="428.5" r="5.7" fill="#9C27B0" data-id="7" data-is-dir="false"/>
+<circle class="node" cx="430.6" cy="411.2" r="8.6" fill="#9E9E9E" data-id="8" data-is-dir="false"/>
+<circle class="node" cx="487.7" cy="442.0" r="8.0" fill="#4CAF50" data-id="9" data-is-dir="true"/>
+<circle class="node" cx="527.8" cy="465.4" r="6.5" fill="#BDBDBD" data-id="10" data-is-dir="false"/>
+<circle class="node" cx="520.1" cy="422.1" r="5.8" fill="#9C27B0" data-id="11" data-is-dir="false"/>
+<circle class="node" cx="445.2" cy="470.6" r="8.0" fill="#4CAF50" data-id="12" data-is-dir="true"/>
+<circle class="node" cx="473.8" cy="494.5" r="5.9" fill="#9C27B0" data-id="13" data-is-dir="false"/>
+<circle class="node" cx="397.0" cy="569.5" r="8.0" fill="#4CAF50" data-id="14" data-is-dir="true"/>
+<circle class="node" cx="468.0" cy="564.8" r="8.0" fill="#4CAF50" data-id="15" data-is-dir="true"/>
+<circle class="node" cx="526.4" cy="554.9" r="8.0" fill="#4CAF50" data-id="16" data-is-dir="true"/>
+<circle class="node" cx="567.2" cy="554.4" r="13.4" fill="#9E9E9E" data-id="17" data-is-dir="false"/>
+<circle class="node" cx="494.2" cy="586.2" r="15.7" fill="#9E9E9E" data-id="18" data-is-dir="false"/>
+<circle class="node" cx="355.8" cy="569.3" r="8.0" fill="#4CAF50" data-id="19" data-is-dir="true"/>
+<circle class="node" cx="320.8" cy="553.4" r="16.2" fill="#9E9E9E" data-id="20" data-is-dir="false"/>
+<circle class="node" cx="378.0" cy="633.4" r="8.0" fill="#4CAF50" data-id="21" data-is-dir="true"/>
+<circle class="node" cx="377.1" cy="683.5" r="8.0" fill="#4CAF50" data-id="22" data-is-dir="true"/>
+<circle class="node" cx="366.9" cy="720.0" r="10.8" fill="#9E9E9E" data-id="23" data-is-dir="false"/>
+<circle class="node" cx="344.6" cy="651.4" r="13.1" fill="#9E9E9E" data-id="24" data-is-dir="false"/>
+<circle class="node" cx="449.1" cy="625.3" r="8.0" fill="#4CAF50" data-id="25" data-is-dir="true"/>
+<circle class="node" cx="503.9" cy="653.0" r="8.0" fill="#4CAF50" data-id="26" data-is-dir="true"/>
+<circle class="node" cx="545.9" cy="647.1" r="12.7" fill="#9E9E9E" data-id="27" data-is-dir="false"/>
+<circle class="node" cx="516.7" cy="690.1" r="12.9" fill="#9E9E9E" data-id="28" data-is-dir="false"/>
+<circle class="node" cx="446.9" cy="662.5" r="14.0" fill="#9E9E9E" data-id="29" data-is-dir="false"/>
+<circle class="node" cx="379.9" cy="527.1" r="8.0" fill="#4CAF50" data-id="30" data-is-dir="true"/>
+<circle class="node" cx="348.1" cy="497.8" r="8.0" fill="#4CAF50" data-id="31" data-is-dir="true"/>
+<circle class="node" cx="321.1" cy="475.1" r="10.3" fill="#9E9E9E" data-id="32" data-is-dir="false"/>
+<circle class="node" cx="410.7" cy="516.6" r="12.8" fill="#9E9E9E" data-id="33" data-is-dir="false"/>
+<circle class="node" cx="310.8" cy="603.1" r="8.0" fill="#4CAF50" data-id="34" data-is-dir="true"/>
+<circle class="node" cx="267.7" cy="636.0" r="8.0" fill="#4CAF50" data-id="35" data-is-dir="true"/>
+<circle class="node" cx="232.1" cy="652.0" r="17.5" fill="#9E9E9E" data-id="36" data-is-dir="false"/>
+<circle class="node" cx="272.2" cy="588.9" r="16.9" fill="#9E9E9E" data-id="37" data-is-dir="false"/>
+<circle class="node" cx="233.3" cy="418.5" r="8.0" fill="#4CAF50" data-id="38" data-is-dir="true"/>
+<circle class="node" cx="268.5" cy="416.1" r="5.5" fill="#9C27B0" data-id="39" data-is-dir="false"/>
+<circle class="node" cx="202.8" cy="430.7" r="10.7" fill="#9E9E9E" data-id="40" data-is-dir="false"/>
+<circle class="node" cx="163.9" cy="478.5" r="8.0" fill="#4CAF50" data-id="41" data-is-dir="true"/>
+<circle class="node" cx="124.2" cy="466.6" r="8.5" fill="#9E9E9E" data-id="42" data-is-dir="false"/>
+<circle class="node" cx="125.9" cy="510.1" r="9.7" fill="#BDBDBD" data-id="43" data-is-dir="false"/>
+<circle class="node" cx="168.5" cy="520.3" r="5.8" fill="#9C27B0" data-id="44" data-is-dir="false"/>
+<circle class="node" cx="238.2" cy="466.4" r="8.0" fill="#4CAF50" data-id="45" data-is-dir="true"/>
+<circle class="node" cx="235.3" cy="503.9" r="5.9" fill="#9C27B0" data-id="46" data-is-dir="false"/>
+<circle class="node" cx="167.3" cy="402.5" r="8.0" fill="#4CAF50" data-id="47" data-is-dir="true"/>
+<circle class="node" cx="118.5" cy="394.0" r="8.0" fill="#4CAF50" data-id="48" data-is-dir="true"/>
+<circle class="node" cx="80.0" cy="388.5" r="15.7" fill="#9E9E9E" data-id="49" data-is-dir="false"/>
+<circle class="node" cx="234.0" cy="268.0" r="8.0" fill="#4CAF50" data-id="50" data-is-dir="true"/>
+<circle class="node" cx="208.0" cy="244.5" r="5.7" fill="#9C27B0" data-id="51" data-is-dir="false"/>
+<circle class="node" cx="252.3" cy="234.1" r="8.2" fill="#9E9E9E" data-id="52" data-is-dir="false"/>
+<circle class="node" cx="215.5" cy="312.8" r="8.0" fill="#4CAF50" data-id="53" data-is-dir="true"/>
+<circle class="node" cx="181.7" cy="333.8" r="6.5" fill="#BDBDBD" data-id="54" data-is-dir="false"/>
+<circle class="node" cx="231.5" cy="344.5" r="5.8" fill="#9C27B0" data-id="55" data-is-dir="false"/>
+<circle class="node" cx="172.8" cy="278.1" r="8.0" fill="#4CAF50" data-id="56" data-is-dir="true"/>
+<circle class="node" cx="131.8" cy="289.6" r="5.9" fill="#9C27B0" data-id="57" data-is-dir="false"/>
+<circle class="node" cx="189.1" cy="188.2" r="8.0" fill="#4CAF50" data-id="58" data-is-dir="true"/>
+<circle class="node" cx="154.5" cy="157.4" r="8.0" fill="#4CAF50" data-id="59" data-is-dir="true"/>
+<circle class="node" cx="163.3" cy="104.4" r="14.1" fill="#9E9E9E" data-id="60" data-is-dir="false"/>
+<circle class="node" cx="179.0" cy="142.4" r="8.0" fill="#4CAF50" data-id="61" data-is-dir="true"/>
+<circle class="node" cx="129.7" cy="125.1" r="12.0" fill="#9E9E9E" data-id="62" data-is-dir="false"/>
+<circle class="node" cx="230.6" cy="151.7" r="8.0" fill="#4CAF50" data-id="63" data-is-dir="true"/>
+<circle class="node" cx="254.1" cy="118.6" r="13.8" fill="#9E9E9E" data-id="64" data-is-dir="false"/>
+<circle class="node" cx="136.9" cy="208.4" r="8.0" fill="#4CAF50" data-id="65" data-is-dir="true"/>
+<circle class="node" cx="97.3" cy="219.6" r="14.2" fill="#9E9E9E" data-id="66" data-is-dir="false"/>
+<circle class="node" cx="320.5" cy="310.1" r="8.0" fill="#4CAF50" data-id="67" data-is-dir="true"/>
+<circle class="node" cx="311.9" cy="350.9" r="5.3" fill="#9C27B0" data-id="68" data-is-dir="false"/>
+<circle class="node" cx="287.6" cy="307.6" r="11.2" fill="#9E9E9E" data-id="69" data-is-dir="false"/>
+<circle class="node" cx="313.8" cy="258.3" r="8.0" fill="#4CAF50" data-id="70" data-is-dir="true"/>
+<circle class="node" cx="310.7" cy="216.2" r="6.1" fill="#9C27B0" data-id="71" data-is-dir="false"/>
+<circle class="node" cx="381.9" cy="273.4" r="8.0" fill="#4CAF50" data-id="72" data-is-dir="true"/>
+<circle class="node" cx="366.4" cy="239.9" r="8.3" fill="#9E9E9E" data-id="73" data-is-dir="false"/>
+<circle class="node" cx="400.6" cy="306.8" r="8.0" fill="#4CAF50" data-id="74" data-is-dir="true"/>
+<circle class="node" cx="412.0" cy="340.8" r="5.9" fill="#9C27B0" data-id="75" data-is-dir="false"/>
+<circle class="node" cx="406.3" cy="218.1" r="8.0" fill="#4CAF50" data-id="76" data-is-dir="true"/>
+<circle class="node" cx="436.0" cy="179.1" r="8.0" fill="#4CAF50" data-id="77" data-is-dir="true"/>
+<circle class="node" cx="470.3" cy="146.7" r="13.5" fill="#9E9E9E" data-id="78" data-is-dir="false"/>
+<circle class="node" cx="547.3" cy="320.5" r="11.1" fill="#BDBDBD" data-id="79" data-is-dir="false"/>
+<circle class="node" cx="510.2" cy="194.8" r="6.0" fill="#9C27B0" data-id="80" data-is-dir="false"/>
+<circle class="node" cx="547.4" cy="207.4" r="7.0" fill="#BDBDBD" data-id="81" data-is-dir="false"/>
+<circle class="node" cx="432.8" cy="131.3" r="8.0" fill="#4CAF50" data-id="82" data-is-dir="true"/>
+<circle class="node" cx="416.5" cy="80.0" r="30.0" fill="#BDBDBD" data-id="83" data-is-dir="false"/>
+<circle class="node" cx="383.9" cy="103.3" r="15.9" fill="#9C27B0" data-id="84" data-is-dir="false"/>
+<circle class="node" cx="456.1" cy="90.6" r="6.7" fill="#9E9E9E" data-id="85" data-is-dir="false"/>
+<circle class="node" cx="392.1" cy="141.8" r="4.0" fill="#BDBDBD" data-id="86" data-is-dir="false"/>
+<circle class="node" cx="475.3" cy="302.0" r="11.0" fill="#9E9E9E" data-id="87" data-is-dir="false"/>
+<circle class="node" cx="509.2" cy="230.5" r="5.7" fill="#BDBDBD" data-id="88" data-is-dir="false"/>
+<circle class="node" cx="586.5" cy="230.3" r="8.9" fill="#9E9E9E" data-id="89" data-is-dir="false"/>
+<circle class="node" cx="644.5" cy="282.5" r="8.0" fill="#4CAF50" data-id="90" data-is-dir="true"/>
+<circle class="node" cx="663.7" cy="244.4" r="10.8" fill="#3F51B5" data-id="91" data-is-dir="false"/>
+<circle class="node" cx="688.9" cy="314.0" r="13.2" fill="#3F51B5" data-id="92" data-is-dir="false"/>
+<circle class="node" cx="693.9" cy="272.6" r="14.2" fill="#3F51B5" data-id="93" data-is-dir="false"/>
+<circle class="node" cx="649.0" cy="322.6" r="16.2" fill="#3F51B5" data-id="94" data-is-dir="false"/>
+<circle class="node" cx="580.1" cy="163.6" r="8.0" fill="#4CAF50" data-id="95" data-is-dir="true"/>
+<circle class="node" cx="624.4" cy="161.3" r="6.0" fill="#BDBDBD" data-id="96" data-is-dir="false"/>
+<circle class="node" cx="561.9" cy="122.5" r="5.4" fill="#9C27B0" data-id="97" data-is-dir="false"/>
+<circle class="node" cx="605.5" cy="121.3" r="11.1" fill="#9C27B0" data-id="98" data-is-dir="false"/>
+<circle class="node" cx="584.2" cy="348.5" r="8.0" fill="#4CAF50" data-id="99" data-is-dir="true"/>
+<circle class="node" cx="624.4" cy="401.7" r="8.0" fill="#4CAF50" data-id="100" data-is-dir="true"/>
+<circle class="node" cx="665.0" cy="414.5" r="7.4" fill="#9C27B0" data-id="101" data-is-dir="false"/>
+<circle class="node" cx="627.8" cy="443.3" r="6.3" fill="#9C27B0" data-id="102" data-is-dir="false"/>
+<circle class="node" cx="508.4" cy="329.7" r="9.1" fill="#9C27B0" data-id="103" data-is-dir="false"/>
+<circle class="node" cx="585.4" cy="276.1" r="12.8" fill="#9E9E9E" data-id="104" data-is-dir="false"/>
+<circle class="node" cx="552.0" cy="286.1" r="8.4" fill="#9C27B0" data-id="105" data-is-dir="false"/>
+
+    </g>
+    <g id="labels-group">
+<text class="dir-label" x="523.7" y="279.5" text-anchor="middle" data-label-for="0">gb-agent-skills</text>
+<text class="label" x="472.7" y="255.1" text-anchor="middle" data-label-for="2">.claudelint-custo...</text>
+<text class="dir-label" x="353.9" y="352.9" text-anchor="middle" data-label-for="5">plugins</text>
+<text class="dir-label" x="414.7" y="464.0" text-anchor="middle" data-label-for="6">architecture</text>
+<text class="dir-label" x="487.7" y="462.0" text-anchor="middle" data-label-for="9">hooks</text>
+<text class="dir-label" x="445.2" y="490.6" text-anchor="middle" data-label-for="12">.claude-plugin</text>
+<text class="dir-label" x="397.0" y="589.5" text-anchor="middle" data-label-for="14">skills</text>
+<text class="dir-label" x="468.0" y="584.8" text-anchor="middle" data-label-for="15">reporting-tropism...</text>
+<text class="dir-label" x="526.4" y="574.9" text-anchor="middle" data-label-for="16">references</text>
+<text class="label" x="567.2" y="579.8" text-anchor="middle" data-label-for="17">known-limitations.md</text>
+<text class="label" x="494.2" y="613.9" text-anchor="middle" data-label-for="18">SKILL.md</text>
+<text class="dir-label" x="355.8" y="589.3" text-anchor="middle" data-label-for="19">tropism-in-the-loop</text>
+<text class="label" x="320.8" y="581.5" text-anchor="middle" data-label-for="20">SKILL.md</text>
+<text class="dir-label" x="378.0" y="653.4" text-anchor="middle" data-label-for="21">model-repository</text>
+<text class="dir-label" x="377.1" y="703.5" text-anchor="middle" data-label-for="22">references</text>
+<text class="label" x="344.6" y="676.5" text-anchor="middle" data-label-for="24">SKILL.md</text>
+<text class="dir-label" x="449.1" y="645.3" text-anchor="middle" data-label-for="25">forge-dsl</text>
+<text class="dir-label" x="503.9" y="673.0" text-anchor="middle" data-label-for="26">references</text>
+<text class="label" x="545.9" y="671.8" text-anchor="middle" data-label-for="27">examples.md</text>
+<text class="label" x="516.7" y="715.0" text-anchor="middle" data-label-for="28">grammar.md</text>
+<text class="label" x="446.9" y="688.5" text-anchor="middle" data-label-for="29">SKILL.md</text>
+<text class="dir-label" x="379.9" y="547.1" text-anchor="middle" data-label-for="30">architecture-review</text>
+<text class="dir-label" x="348.1" y="517.8" text-anchor="middle" data-label-for="31">references</text>
+<text class="label" x="410.7" y="541.5" text-anchor="middle" data-label-for="33">SKILL.md</text>
+<text class="dir-label" x="310.8" y="623.1" text-anchor="middle" data-label-for="34">authoring-archite...</text>
+<text class="dir-label" x="267.7" y="656.0" text-anchor="middle" data-label-for="35">references</text>
+<text class="label" x="232.1" y="681.4" text-anchor="middle" data-label-for="36">rule-reference.md</text>
+<text class="label" x="272.2" y="617.8" text-anchor="middle" data-label-for="37">SKILL.md</text>
+<text class="dir-label" x="233.3" y="438.5" text-anchor="middle" data-label-for="38">code-intelligence</text>
+<text class="dir-label" x="163.9" y="498.5" text-anchor="middle" data-label-for="41">hooks</text>
+<text class="dir-label" x="238.2" y="486.4" text-anchor="middle" data-label-for="45">.claude-plugin</text>
+<text class="dir-label" x="167.3" y="422.5" text-anchor="middle" data-label-for="47">skills</text>
+<text class="dir-label" x="118.5" y="414.0" text-anchor="middle" data-label-for="48">explore-code</text>
+<text class="label" x="80.0" y="416.2" text-anchor="middle" data-label-for="49">SKILL.md</text>
+<text class="dir-label" x="234.0" y="288.0" text-anchor="middle" data-label-for="50">api-contracts</text>
+<text class="dir-label" x="215.5" y="332.8" text-anchor="middle" data-label-for="53">hooks</text>
+<text class="dir-label" x="172.8" y="298.1" text-anchor="middle" data-label-for="56">.claude-plugin</text>
+<text class="dir-label" x="189.1" y="208.2" text-anchor="middle" data-label-for="58">skills</text>
+<text class="dir-label" x="154.5" y="177.4" text-anchor="middle" data-label-for="59">brake-adopt</text>
+<text class="label" x="163.3" y="130.5" text-anchor="middle" data-label-for="60">SKILL.md</text>
+<text class="dir-label" x="179.0" y="162.4" text-anchor="middle" data-label-for="61">brake-consumer-im...</text>
+<text class="dir-label" x="230.6" y="171.7" text-anchor="middle" data-label-for="63">api-compatibility</text>
+<text class="label" x="254.1" y="144.4" text-anchor="middle" data-label-for="64">SKILL.md</text>
+<text class="dir-label" x="136.9" y="228.4" text-anchor="middle" data-label-for="65">brake-triage</text>
+<text class="label" x="97.3" y="245.8" text-anchor="middle" data-label-for="66">SKILL.md</text>
+<text class="dir-label" x="320.5" y="330.1" text-anchor="middle" data-label-for="67">myspec</text>
+<text class="dir-label" x="313.8" y="278.3" text-anchor="middle" data-label-for="70">.claude-plugin</text>
+<text class="dir-label" x="381.9" y="293.4" text-anchor="middle" data-label-for="72">docs-and-diagrams</text>
+<text class="dir-label" x="400.6" y="326.8" text-anchor="middle" data-label-for="74">.claude-plugin</text>
+<text class="dir-label" x="406.3" y="238.1" text-anchor="middle" data-label-for="76">skills</text>
+<text class="dir-label" x="436.0" y="199.1" text-anchor="middle" data-label-for="77">asciidoc-author</text>
+<text class="label" x="470.3" y="172.2" text-anchor="middle" data-label-for="78">SKILL.md</text>
+<text class="dir-label" x="432.8" y="151.3" text-anchor="middle" data-label-for="82">docs</text>
+<text class="label" x="416.5" y="122.0" text-anchor="middle" data-label-for="83">index.html</text>
+<text class="label" x="383.9" y="131.2" text-anchor="middle" data-label-for="84">data.json</text>
+<text class="dir-label" x="644.5" y="302.5" text-anchor="middle" data-label-for="90">scripts</text>
+<text class="label" x="688.9" y="339.2" text-anchor="middle" data-label-for="92">generate_plugin_d...</text>
+<text class="label" x="693.9" y="298.8" text-anchor="middle" data-label-for="93">build-website.py</text>
+<text class="label" x="649.0" y="350.9" text-anchor="middle" data-label-for="94">sync_tool_skills.py</text>
+<text class="dir-label" x="580.1" y="183.6" text-anchor="middle" data-label-for="95">.claude-plugin</text>
+<text class="dir-label" x="584.2" y="368.5" text-anchor="middle" data-label-for="99">.github</text>
+<text class="dir-label" x="624.4" y="421.7" text-anchor="middle" data-label-for="100">workflows</text>
+<text class="label" x="585.4" y="300.9" text-anchor="middle" data-label-for="104">CLAUDE.md</text>
+
+    </g>
+  </g>
+  <g id="legend-group">
+<rect x="10" y="10" width="110" height="194" fill="#1a1a2e" fill-opacity="0.9" rx="6" stroke="#404060" stroke-width="1"/>
+<circle cx="24" cy="24" r="5" fill="#4CAF50"/>
+<text x="36" y="28" class="legend-text">Directory</text>
+<circle cx="24" cy="44" r="5" fill="#FF7043"/>
+<text x="36" y="48" class="legend-text">Rust</text>
+<circle cx="24" cy="64" r="5" fill="#FFEB3B"/>
+<text x="36" y="68" class="legend-text">JavaScript</text>
+<circle cx="24" cy="84" r="5" fill="#2196F3"/>
+<text x="36" y="88" class="legend-text">TypeScript</text>
+<circle cx="24" cy="104" r="5" fill="#3F51B5"/>
+<text x="36" y="108" class="legend-text">Python</text>
+<circle cx="24" cy="124" r="5" fill="#00BCD4"/>
+<text x="36" y="128" class="legend-text">Go</text>
+<circle cx="24" cy="144" r="5" fill="#9E9E9E"/>
+<text x="36" y="148" class="legend-text">Markdown</text>
+<circle cx="24" cy="164" r="5" fill="#9C27B0"/>
+<text x="36" y="168" class="legend-text">Config</text>
+<circle cx="24" cy="184" r="5" fill="#BDBDBD"/>
+<text x="36" y="188" class="legend-text">Other</text>
+
+  </g>
+</svg>
+</div>
+
+<script>
+// === Data ===
+const NODES = [{"id":0,"label":"gb-agent-skills","fullPath":"/Users/graham/dev/projects/gb-agent-skills","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":523.72,"y":259.51,"r":8.00},{"id":1,"label":"TEMPLATE.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/TEMPLATE.md","isDir":false,"size":3152,"fileType":"Markdown","color":"#9E9E9E","x":554.35,"y":245.16,"r":10.83},{"id":2,"label":".claudelint-custom.py","fullPath":"/Users/graham/dev/projects/gb-agent-skills/.claudelint-custom.py","isDir":false,"size":6103,"fileType":"Python","color":"#3F51B5","x":472.75,"y":229.56,"r":13.51},{"id":3,"label":"LICENSE","fullPath":"/Users/graham/dev/projects/gb-agent-skills/LICENSE","isDir":false,"size":1073,"fileType":"Other","color":"#BDBDBD","x":476.85,"y":265.29,"r":7.99},{"id":4,"label":"tools.lock.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/tools.lock.json","isDir":false,"size":3595,"fileType":"Config","color":"#9C27B0","x":511.83,"y":291.45,"r":11.30},{"id":5,"label":"plugins","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":353.91,"y":332.93,"r":8.00},{"id":6,"label":"architecture","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":414.73,"y":444.02,"r":8.00},{"id":7,"label":".mcp.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/.mcp.json","isDir":false,"size":185,"fileType":"Config","color":"#9C27B0","x":380.98,"y":428.48,"r":5.65},{"id":8,"label":"README.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/README.md","isDir":false,"size":1442,"fileType":"Markdown","color":"#9E9E9E","x":430.55,"y":411.21,"r":8.62},{"id":9,"label":"hooks","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/hooks","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":487.74,"y":441.98,"r":8.00},{"id":10,"label":"check-bx.sh","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/hooks/check-bx.sh","isDir":false,"size":435,"fileType":"Other","color":"#BDBDBD","x":527.76,"y":465.44,"r":6.54},{"id":11,"label":"hooks.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/hooks/hooks.json","isDir":false,"size":214,"fileType":"Config","color":"#9C27B0","x":520.08,"y":422.10,"r":5.78},{"id":12,"label":".claude-plugin","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/.claude-plugin","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":445.16,"y":470.63,"r":8.00},{"id":13,"label":"plugin.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/.claude-plugin/plugin.json","isDir":false,"size":233,"fileType":"Config","color":"#9C27B0","x":473.85,"y":494.54,"r":5.86},{"id":14,"label":"skills","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":396.98,"y":569.52,"r":8.00},{"id":15,"label":"reporting-tropism-issues","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/reporting-tropism-issues","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":467.98,"y":564.84,"r":8.00},{"id":16,"label":"references","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/reporting-tropism-issues/references","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":526.35,"y":554.86,"r":8.00},{"id":17,"label":"known-limitations.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/reporting-tropism-issues/references/known-limitations.md","isDir":false,"size":6013,"fileType":"Markdown","color":"#9E9E9E","x":567.23,"y":554.38,"r":13.43},{"id":18,"label":"SKILL.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/reporting-tropism-issues/SKILL.md","isDir":false,"size":9324,"fileType":"Markdown","color":"#9E9E9E","x":494.18,"y":586.16,"r":15.75},{"id":19,"label":"tropism-in-the-loop","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/tropism-in-the-loop","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":355.85,"y":569.31,"r":8.00},{"id":20,"label":"SKILL.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/tropism-in-the-loop/SKILL.md","isDir":false,"size":9973,"fileType":"Markdown","color":"#9E9E9E","x":320.80,"y":553.36,"r":16.15},{"id":21,"label":"model-repository","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/model-repository","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":378.00,"y":633.38,"r":8.00},{"id":22,"label":"references","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/model-repository/references","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":377.09,"y":683.54,"r":8.00},{"id":23,"label":"analyze-options.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/model-repository/references/analyze-options.md","isDir":false,"size":3083,"fileType":"Markdown","color":"#9E9E9E","x":366.88,"y":720.00,"r":10.76},{"id":24,"label":"SKILL.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/model-repository/SKILL.md","isDir":false,"size":5628,"fileType":"Markdown","color":"#9E9E9E","x":344.63,"y":651.38,"r":13.13},{"id":25,"label":"forge-dsl","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/forge-dsl","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":449.07,"y":625.31,"r":8.00},{"id":26,"label":"references","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/forge-dsl/references","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":503.91,"y":652.99,"r":8.00},{"id":27,"label":"examples.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/forge-dsl/references/examples.md","isDir":false,"size":5069,"fileType":"Markdown","color":"#9E9E9E","x":545.86,"y":647.13,"r":12.66},{"id":28,"label":"grammar.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/forge-dsl/references/grammar.md","isDir":false,"size":5389,"fileType":"Markdown","color":"#9E9E9E","x":516.72,"y":690.10,"r":12.93},{"id":29,"label":"SKILL.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/forge-dsl/SKILL.md","isDir":false,"size":6734,"fileType":"Markdown","color":"#9E9E9E","x":446.86,"y":662.48,"r":13.98},{"id":30,"label":"architecture-review","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/architecture-review","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":379.86,"y":527.15,"r":8.00},{"id":31,"label":"references","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/architecture-review/references","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":348.09,"y":497.83,"r":8.00},{"id":32,"label":"check-rules.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/architecture-review/references/check-rules.md","isDir":false,"size":2683,"fileType":"Markdown","color":"#9E9E9E","x":321.11,"y":475.11,"r":10.30},{"id":33,"label":"SKILL.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/architecture-review/SKILL.md","isDir":false,"size":5283,"fileType":"Markdown","color":"#9E9E9E","x":410.75,"y":516.63,"r":12.84},{"id":34,"label":"authoring-architecture-rules","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/authoring-architecture-rules","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":310.83,"y":603.07,"r":8.00},{"id":35,"label":"references","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/authoring-architecture-rules/references","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":267.73,"y":636.02,"r":8.00},{"id":36,"label":"rule-reference.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/authoring-architecture-rules/references/rule-reference.md","isDir":false,"size":12226,"fileType":"Markdown","color":"#9E9E9E","x":232.12,"y":651.98,"r":17.45},{"id":37,"label":"SKILL.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/architecture/skills/authoring-architecture-rules/SKILL.md","isDir":false,"size":11247,"fileType":"Markdown","color":"#9E9E9E","x":272.19,"y":588.94,"r":16.90},{"id":38,"label":"code-intelligence","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/code-intelligence","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":233.29,"y":418.53,"r":8.00},{"id":39,"label":".mcp.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/code-intelligence/.mcp.json","isDir":false,"size":145,"fileType":"Config","color":"#9C27B0","x":268.46,"y":416.09,"r":5.47},{"id":40,"label":"README.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/code-intelligence/README.md","isDir":false,"size":3009,"fileType":"Markdown","color":"#9E9E9E","x":202.83,"y":430.67,"r":10.67},{"id":41,"label":"hooks","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/code-intelligence/hooks","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":163.89,"y":478.48,"r":8.00},{"id":42,"label":"session-start.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/code-intelligence/hooks/session-start.md","isDir":false,"size":1372,"fileType":"Markdown","color":"#9E9E9E","x":124.25,"y":466.63,"r":8.51},{"id":43,"label":"session-start.sh","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/code-intelligence/hooks/session-start.sh","isDir":false,"size":2214,"fileType":"Other","color":"#BDBDBD","x":125.87,"y":510.06,"r":9.73},{"id":44,"label":"hooks.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/code-intelligence/hooks/hooks.json","isDir":false,"size":219,"fileType":"Config","color":"#9C27B0","x":168.54,"y":520.34,"r":5.80},{"id":45,"label":".claude-plugin","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/code-intelligence/.claude-plugin","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":238.18,"y":466.36,"r":8.00},{"id":46,"label":"plugin.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/code-intelligence/.claude-plugin/plugin.json","isDir":false,"size":249,"fileType":"Config","color":"#9C27B0","x":235.33,"y":503.86,"r":5.92},{"id":47,"label":"skills","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/code-intelligence/skills","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":167.33,"y":402.49,"r":8.00},{"id":48,"label":"explore-code","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/code-intelligence/skills/explore-code","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":118.53,"y":394.01,"r":8.00},{"id":49,"label":"SKILL.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/code-intelligence/skills/explore-code/SKILL.md","isDir":false,"size":9209,"fileType":"Markdown","color":"#9E9E9E","x":80.00,"y":388.52,"r":15.68},{"id":50,"label":"api-contracts","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":234.00,"y":267.97,"r":8.00},{"id":51,"label":".mcp.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/.mcp.json","isDir":false,"size":185,"fileType":"Config","color":"#9C27B0","x":207.96,"y":244.51,"r":5.65},{"id":52,"label":"README.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/README.md","isDir":false,"size":1205,"fileType":"Markdown","color":"#9E9E9E","x":252.34,"y":234.14,"r":8.22},{"id":53,"label":"hooks","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/hooks","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":215.46,"y":312.80,"r":8.00},{"id":54,"label":"check-bx.sh","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/hooks/check-bx.sh","isDir":false,"size":436,"fileType":"Other","color":"#BDBDBD","x":181.75,"y":333.81,"r":6.54},{"id":55,"label":"hooks.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/hooks/hooks.json","isDir":false,"size":214,"fileType":"Config","color":"#9C27B0","x":231.53,"y":344.54,"r":5.78},{"id":56,"label":".claude-plugin","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/.claude-plugin","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":172.79,"y":278.12,"r":8.00},{"id":57,"label":"plugin.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/.claude-plugin/plugin.json","isDir":false,"size":234,"fileType":"Config","color":"#9C27B0","x":131.84,"y":289.64,"r":5.86},{"id":58,"label":"skills","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/skills","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":189.05,"y":188.23,"r":8.00},{"id":59,"label":"brake-adopt","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/skills/brake-adopt","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":154.52,"y":157.43,"r":8.00},{"id":60,"label":"SKILL.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/skills/brake-adopt/SKILL.md","isDir":false,"size":6850,"fileType":"Markdown","color":"#9E9E9E","x":163.26,"y":104.41,"r":14.07},{"id":61,"label":"brake-consumer-impact","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/skills/brake-consumer-impact","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":179.02,"y":142.39,"r":8.00},{"id":62,"label":"SKILL.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/skills/brake-consumer-impact/SKILL.md","isDir":false,"size":4324,"fileType":"Markdown","color":"#9E9E9E","x":129.66,"y":125.06,"r":12.00},{"id":63,"label":"api-compatibility","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/skills/api-compatibility","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":230.62,"y":151.73,"r":8.00},{"id":64,"label":"SKILL.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/skills/api-compatibility/SKILL.md","isDir":false,"size":6497,"fileType":"Markdown","color":"#9E9E9E","x":254.14,"y":118.58,"r":13.81},{"id":65,"label":"brake-triage","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/skills/brake-triage","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":136.89,"y":208.40,"r":8.00},{"id":66,"label":"SKILL.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/api-contracts/skills/brake-triage/SKILL.md","isDir":false,"size":7021,"fileType":"Markdown","color":"#9E9E9E","x":97.32,"y":219.58,"r":14.20},{"id":67,"label":"myspec","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/myspec","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":320.55,"y":310.08,"r":8.00},{"id":68,"label":".mcp.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/myspec/.mcp.json","isDir":false,"size":120,"fileType":"Config","color":"#9C27B0","x":311.89,"y":350.91,"r":5.33},{"id":69,"label":"README.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/myspec/README.md","isDir":false,"size":3454,"fileType":"Markdown","color":"#9E9E9E","x":287.58,"y":307.58,"r":11.15},{"id":70,"label":".claude-plugin","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/myspec/.claude-plugin","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":313.81,"y":258.26,"r":8.00},{"id":71,"label":"plugin.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/myspec/.claude-plugin/plugin.json","isDir":false,"size":296,"fileType":"Config","color":"#9C27B0","x":310.69,"y":216.22,"r":6.09},{"id":72,"label":"docs-and-diagrams","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/docs-and-diagrams","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":381.92,"y":273.42,"r":8.00},{"id":73,"label":"README.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/docs-and-diagrams/README.md","isDir":false,"size":1236,"fileType":"Markdown","color":"#9E9E9E","x":366.42,"y":239.95,"r":8.28},{"id":74,"label":".claude-plugin","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/docs-and-diagrams/.claude-plugin","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":400.63,"y":306.76,"r":8.00},{"id":75,"label":"plugin.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/docs-and-diagrams/.claude-plugin/plugin.json","isDir":false,"size":238,"fileType":"Config","color":"#9C27B0","x":412.01,"y":340.82,"r":5.88},{"id":76,"label":"skills","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/docs-and-diagrams/skills","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":406.26,"y":218.13,"r":8.00},{"id":77,"label":"asciidoc-author","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/docs-and-diagrams/skills/asciidoc-author","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":436.03,"y":179.06,"r":8.00},{"id":78,"label":"SKILL.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/plugins/docs-and-diagrams/skills/asciidoc-author/SKILL.md","isDir":false,"size":6081,"fileType":"Markdown","color":"#9E9E9E","x":470.25,"y":146.74,"r":13.49},{"id":79,"label":"Makefile","fullPath":"/Users/graham/dev/projects/gb-agent-skills/Makefile","isDir":false,"size":3366,"fileType":"Other","color":"#BDBDBD","x":547.27,"y":320.52,"r":11.06},{"id":80,"label":".template-config.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/.template-config.json","isDir":false,"size":266,"fileType":"Config","color":"#9C27B0","x":510.16,"y":194.76,"r":5.98},{"id":81,"label":"README.md.template","fullPath":"/Users/graham/dev/projects/gb-agent-skills/README.md.template","isDir":false,"size":594,"fileType":"Other","color":"#BDBDBD","x":547.39,"y":207.45,"r":6.97},{"id":82,"label":"docs","fullPath":"/Users/graham/dev/projects/gb-agent-skills/docs","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":432.80,"y":131.35,"r":8.00},{"id":83,"label":"index.html","fullPath":"/Users/graham/dev/projects/gb-agent-skills/docs/index.html","isDir":false,"size":45662,"fileType":"Other","color":"#BDBDBD","x":416.53,"y":80.00,"r":30.00},{"id":84,"label":"data.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/docs/data.json","isDir":false,"size":9523,"fileType":"Config","color":"#9C27B0","x":383.87,"y":103.33,"r":15.87},{"id":85,"label":"README.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/docs/README.md","isDir":false,"size":487,"fileType":"Markdown","color":"#9E9E9E","x":456.11,"y":90.65,"r":6.69},{"id":86,"label":".nojekyll","fullPath":"/Users/graham/dev/projects/gb-agent-skills/docs/.nojekyll","isDir":false,"size":0,"fileType":"Other","color":"#BDBDBD","x":392.07,"y":141.75,"r":4.00},{"id":87,"label":"README.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/README.md","isDir":false,"size":3334,"fileType":"Markdown","color":"#9E9E9E","x":475.31,"y":302.02,"r":11.03},{"id":88,"label":".gitignore","fullPath":"/Users/graham/dev/projects/gb-agent-skills/.gitignore","isDir":false,"size":196,"fileType":"Other","color":"#BDBDBD","x":509.16,"y":230.51,"r":5.70},{"id":89,"label":"PLUGINS.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/PLUGINS.md","isDir":false,"size":1592,"fileType":"Markdown","color":"#9E9E9E","x":586.47,"y":230.28,"r":8.85},{"id":90,"label":"scripts","fullPath":"/Users/graham/dev/projects/gb-agent-skills/scripts","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":644.52,"y":282.45,"r":8.00},{"id":91,"label":"apply-branding.py","fullPath":"/Users/graham/dev/projects/gb-agent-skills/scripts/apply-branding.py","isDir":false,"size":3079,"fileType":"Python","color":"#3F51B5","x":663.69,"y":244.45,"r":10.75},{"id":92,"label":"generate_plugin_docs.py","fullPath":"/Users/graham/dev/projects/gb-agent-skills/scripts/generate_plugin_docs.py","isDir":false,"size":5672,"fileType":"Python","color":"#3F51B5","x":688.85,"y":314.04,"r":13.16},{"id":93,"label":"build-website.py","fullPath":"/Users/graham/dev/projects/gb-agent-skills/scripts/build-website.py","isDir":false,"size":7000,"fileType":"Python","color":"#3F51B5","x":693.89,"y":272.63,"r":14.18},{"id":94,"label":"sync_tool_skills.py","fullPath":"/Users/graham/dev/projects/gb-agent-skills/scripts/sync_tool_skills.py","isDir":false,"size":10087,"fileType":"Python","color":"#3F51B5","x":648.98,"y":322.65,"r":16.22},{"id":95,"label":".claude-plugin","fullPath":"/Users/graham/dev/projects/gb-agent-skills/.claude-plugin","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":580.13,"y":163.59,"r":8.00},{"id":96,"label":"marketplace.json.template","fullPath":"/Users/graham/dev/projects/gb-agent-skills/.claude-plugin/marketplace.json.template","isDir":false,"size":262,"fileType":"Other","color":"#BDBDBD","x":624.41,"y":161.28,"r":5.97},{"id":97,"label":"settings.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/.claude-plugin/settings.json","isDir":false,"size":126,"fileType":"Config","color":"#9C27B0","x":561.93,"y":122.51,"r":5.37},{"id":98,"label":"marketplace.json","fullPath":"/Users/graham/dev/projects/gb-agent-skills/.claude-plugin/marketplace.json","isDir":false,"size":3377,"fileType":"Config","color":"#9C27B0","x":605.51,"y":121.30,"r":11.07},{"id":99,"label":".github","fullPath":"/Users/graham/dev/projects/gb-agent-skills/.github","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":584.23,"y":348.48,"r":8.00},{"id":100,"label":"workflows","fullPath":"/Users/graham/dev/projects/gb-agent-skills/.github/workflows","isDir":true,"size":0,"fileType":"Directory","color":"#4CAF50","x":624.42,"y":401.67,"r":8.00},{"id":101,"label":"deploy-docs.yml","fullPath":"/Users/graham/dev/projects/gb-agent-skills/.github/workflows/deploy-docs.yml","isDir":false,"size":779,"fileType":"Config","color":"#9C27B0","x":664.96,"y":414.48,"r":7.40},{"id":102,"label":"lint.yml","fullPath":"/Users/graham/dev/projects/gb-agent-skills/.github/workflows/lint.yml","isDir":false,"size":349,"fileType":"Config","color":"#9C27B0","x":627.80,"y":443.27,"r":6.27},{"id":103,"label":"tools.toml","fullPath":"/Users/graham/dev/projects/gb-agent-skills/tools.toml","isDir":false,"size":1779,"fileType":"Config","color":"#9C27B0","x":508.42,"y":329.68,"r":9.13},{"id":104,"label":"CLAUDE.md","fullPath":"/Users/graham/dev/projects/gb-agent-skills/CLAUDE.md","isDir":false,"size":5172,"fileType":"Markdown","color":"#9E9E9E","x":585.36,"y":276.13,"r":12.75},{"id":105,"label":".claudelint.yaml","fullPath":"/Users/graham/dev/projects/gb-agent-skills/.claudelint.yaml","isDir":false,"size":1321,"fileType":"Config","color":"#9C27B0","x":552.01,"y":286.08,"r":8.42}];
+const EDGES = [{"from":0,"to":1},{"from":0,"to":2},{"from":0,"to":3},{"from":0,"to":4},{"from":0,"to":5},{"from":5,"to":6},{"from":6,"to":7},{"from":6,"to":8},{"from":6,"to":9},{"from":9,"to":10},{"from":9,"to":11},{"from":6,"to":12},{"from":12,"to":13},{"from":6,"to":14},{"from":14,"to":15},{"from":15,"to":16},{"from":16,"to":17},{"from":15,"to":18},{"from":14,"to":19},{"from":19,"to":20},{"from":14,"to":21},{"from":21,"to":22},{"from":22,"to":23},{"from":21,"to":24},{"from":14,"to":25},{"from":25,"to":26},{"from":26,"to":27},{"from":26,"to":28},{"from":25,"to":29},{"from":14,"to":30},{"from":30,"to":31},{"from":31,"to":32},{"from":30,"to":33},{"from":14,"to":34},{"from":34,"to":35},{"from":35,"to":36},{"from":34,"to":37},{"from":5,"to":38},{"from":38,"to":39},{"from":38,"to":40},{"from":38,"to":41},{"from":41,"to":42},{"from":41,"to":43},{"from":41,"to":44},{"from":38,"to":45},{"from":45,"to":46},{"from":38,"to":47},{"from":47,"to":48},{"from":48,"to":49},{"from":5,"to":50},{"from":50,"to":51},{"from":50,"to":52},{"from":50,"to":53},{"from":53,"to":54},{"from":53,"to":55},{"from":50,"to":56},{"from":56,"to":57},{"from":50,"to":58},{"from":58,"to":59},{"from":59,"to":60},{"from":58,"to":61},{"from":61,"to":62},{"from":58,"to":63},{"from":63,"to":64},{"from":58,"to":65},{"from":65,"to":66},{"from":5,"to":67},{"from":67,"to":68},{"from":67,"to":69},{"from":67,"to":70},{"from":70,"to":71},{"from":5,"to":72},{"from":72,"to":73},{"from":72,"to":74},{"from":74,"to":75},{"from":72,"to":76},{"from":76,"to":77},{"from":77,"to":78},{"from":0,"to":79},{"from":0,"to":80},{"from":0,"to":81},{"from":0,"to":82},{"from":82,"to":83},{"from":82,"to":84},{"from":82,"to":85},{"from":82,"to":86},{"from":0,"to":87},{"from":0,"to":88},{"from":0,"to":89},{"from":0,"to":90},{"from":90,"to":91},{"from":90,"to":92},{"from":90,"to":93},{"from":90,"to":94},{"from":0,"to":95},{"from":95,"to":96},{"from":95,"to":97},{"from":95,"to":98},{"from":0,"to":99},{"from":99,"to":100},{"from":100,"to":101},{"from":100,"to":102},{"from":0,"to":103},{"from":0,"to":104},{"from":0,"to":105}];
+const CHILDREN_MAP = {"58":[59,61,63,65],"5":[6,38,50,67,72],"16":[17],"9":[10,11],"25":[26,29],"31":[32],"70":[71],"61":[62],"26":[27,28],"67":[68,69,70],"34":[35,37],"48":[49],"35":[36],"22":[23],"0":[1,2,3,4,5,79,80,81,82,87,88,89,90,95,99,103,104,105],"30":[31,33],"65":[66],"59":[60],"47":[48],"82":[83,84,85,86],"95":[96,97,98],"21":[22,24],"56":[57],"90":[91,92,93,94],"72":[73,74,76],"77":[78],"19":[20],"6":[7,8,9,12,14],"14":[15,19,21,25,30,34],"63":[64],"15":[16,18],"74":[75],"99":[100],"45":[46],"100":[101,102],"76":[77],"41":[42,43,44],"12":[13],"38":[39,40,41,45,47],"50":[51,52,53,56,58],"53":[54,55]};
+
+// === State ===
+let scale = 1;
+let panX = 0, panY = 0;
+let isPanning = false;
+let panStartX = 0, panStartY = 0;
+let panStartPanX = 0, panStartPanY = 0;
+let isDraggingNode = false;
+let dragNodeId = null;
+let dragOffsetX = 0, dragOffsetY = 0;
+let hoveredNodeId = null;
+let collapsedDirs = new Set();
+let hiddenNodes = new Set();
+let searchMatches = new Set();
+
+const svg = document.getElementById('graph-svg');
+const panZoomGroup = document.getElementById('pan-zoom-group');
+const edgesGroup = document.getElementById('edges-group');
+const nodesGroup = document.getElementById('nodes-group');
+const labelsGroup = document.getElementById('labels-group');
+const tooltip = document.getElementById('tooltip');
+const searchInput = document.getElementById('search-input');
+const searchCount = document.getElementById('search-count');
+
+const nodeEls = nodesGroup.querySelectorAll('.node');
+const edgeEls = edgesGroup.querySelectorAll('.edge');
+const labelEls = labelsGroup.querySelectorAll('text');
+
+// Index elements by data-id
+const nodeElById = {};
+nodeEls.forEach(el => { nodeElById[el.getAttribute('data-id')] = el; });
+const labelElById = {};
+labelEls.forEach(el => { labelElById[el.getAttribute('data-label-for')] = el; });
+
+// Build edge index: nodeId -> [edge indices]
+const edgesByNode = {};
+edgeEls.forEach((el, idx) => {
+  const from = el.getAttribute('data-from');
+  const to = el.getAttribute('data-to');
+  if (!edgesByNode[from]) edgesByNode[from] = [];
+  if (!edgesByNode[to]) edgesByNode[to] = [];
+  edgesByNode[from].push(idx);
+  edgesByNode[to].push(idx);
+});
+
+// Build neighbor index
+const neighborsByNode = {};
+EDGES.forEach(e => {
+  if (!neighborsByNode[e.from]) neighborsByNode[e.from] = [];
+  if (!neighborsByNode[e.to]) neighborsByNode[e.to] = [];
+  neighborsByNode[e.from].push(e.to);
+  neighborsByNode[e.to].push(e.from);
+});
+
+// === Transform ===
+function applyTransform() {
+  panZoomGroup.setAttribute('transform', `translate(${panX},${panY}) scale(${scale})`);
+}
+
+// === Zoom ===
+svg.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const rect = svg.getBoundingClientRect();
+  const svgW = parseFloat(svg.getAttribute('viewBox').split(' ')[2]);
+  const svgH = parseFloat(svg.getAttribute('viewBox').split(' ')[3]);
+  // Mouse position in SVG coordinate space
+  const mx = (e.clientX - rect.left) / rect.width * svgW;
+  const my = (e.clientY - rect.top) / rect.height * svgH;
+
+  const oldScale = scale;
+  const zoomFactor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+  scale = Math.min(Math.max(scale * zoomFactor, 0.1), 30);
+
+  // Adjust pan so zoom is centered on mouse
+  panX = mx - (mx - panX) * (scale / oldScale);
+  panY = my - (my - panY) * (scale / oldScale);
+
+  applyTransform();
+}, { passive: false });
+
+// === Pan ===
+svg.addEventListener('mousedown', (e) => {
+  // Check if we hit a node
+  const target = e.target;
+  if (target.classList.contains('node')) {
+    const nodeId = parseInt(target.getAttribute('data-id'));
+    const nodeData = NODES[nodeId];
+
+    // If it's a directory and not shift-held, toggle collapse
+    if (nodeData && nodeData.isDir && !e.shiftKey) {
+      toggleCollapse(nodeId);
+      return;
+    }
+
+    // Start dragging
+    isDraggingNode = true;
+    dragNodeId = nodeId;
+    const rect = svg.getBoundingClientRect();
+    const svgW = parseFloat(svg.getAttribute('viewBox').split(' ')[2]);
+    const svgH = parseFloat(svg.getAttribute('viewBox').split(' ')[3]);
+    const mx = (e.clientX - rect.left) / rect.width * svgW;
+    const my = (e.clientY - rect.top) / rect.height * svgH;
+    const worldX = (mx - panX) / scale;
+    const worldY = (my - panY) / scale;
+    dragOffsetX = worldX - nodeData.x;
+    dragOffsetY = worldY - nodeData.y;
+    e.preventDefault();
+    return;
+  }
+
+  isPanning = true;
+  panStartX = e.clientX;
+  panStartY = e.clientY;
+  panStartPanX = panX;
+  panStartPanY = panY;
+  svg.style.cursor = 'grabbing';
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (isPanning) {
+    const rect = svg.getBoundingClientRect();
+    const svgW = parseFloat(svg.getAttribute('viewBox').split(' ')[2]);
+    const svgH = parseFloat(svg.getAttribute('viewBox').split(' ')[3]);
+    const dx = (e.clientX - panStartX) / rect.width * svgW;
+    const dy = (e.clientY - panStartY) / rect.height * svgH;
+    panX = panStartPanX + dx;
+    panY = panStartPanY + dy;
+    applyTransform();
+    return;
+  }
+  if (isDraggingNode && dragNodeId !== null) {
+    const rect = svg.getBoundingClientRect();
+    const svgW = parseFloat(svg.getAttribute('viewBox').split(' ')[2]);
+    const svgH = parseFloat(svg.getAttribute('viewBox').split(' ')[3]);
+    const mx = (e.clientX - rect.left) / rect.width * svgW;
+    const my = (e.clientY - rect.top) / rect.height * svgH;
+    const worldX = (mx - panX) / scale;
+    const worldY = (my - panY) / scale;
+    const newX = worldX - dragOffsetX;
+    const newY = worldY - dragOffsetY;
+
+    // Update data
+    NODES[dragNodeId].x = newX;
+    NODES[dragNodeId].y = newY;
+
+    // Update node circle
+    const el = nodeElById[dragNodeId];
+    if (el) {
+      el.setAttribute('cx', newX.toFixed(1));
+      el.setAttribute('cy', newY.toFixed(1));
+    }
+
+    // Update label
+    const lbl = labelElById[dragNodeId];
+    if (lbl) {
+      lbl.setAttribute('x', newX.toFixed(1));
+      lbl.setAttribute('y', (newY + NODES[dragNodeId].r + 12).toFixed(1));
+    }
+
+    // Update connected edges
+    (edgesByNode[dragNodeId] || []).forEach(idx => {
+      const edgeEl = edgeEls[idx];
+      const fromId = edgeEl.getAttribute('data-from');
+      const toId = edgeEl.getAttribute('data-to');
+      const fromNode = NODES[fromId];
+      const toNode = NODES[toId];
+      edgeEl.setAttribute('x1', fromNode.x.toFixed(1));
+      edgeEl.setAttribute('y1', fromNode.y.toFixed(1));
+      edgeEl.setAttribute('x2', toNode.x.toFixed(1));
+      edgeEl.setAttribute('y2', toNode.y.toFixed(1));
+    });
+
+    e.preventDefault();
+    return;
+  }
+
+  // Hover detection
+  handleHover(e);
+});
+
+window.addEventListener('mouseup', () => {
+  isPanning = false;
+  isDraggingNode = false;
+  dragNodeId = null;
+  svg.style.cursor = '';
+});
+
+// === Hover / Tooltip ===
+function handleHover(e) {
+  const target = document.elementFromPoint(e.clientX, e.clientY);
+  if (target && target.classList.contains('node')) {
+    const nodeId = parseInt(target.getAttribute('data-id'));
+    if (nodeId !== hoveredNodeId) {
+      hoveredNodeId = nodeId;
+      highlightNode(nodeId);
+      showTooltip(e, nodeId);
+    } else {
+      moveTooltip(e);
+    }
+  } else {
+    if (hoveredNodeId !== null) {
+      hoveredNodeId = null;
+      clearHighlight();
+      hideTooltip();
+    }
+  }
+}
+
+function highlightNode(nodeId) {
+  const connectedNodes = new Set([nodeId]);
+  const connectedEdges = new Set();
+
+  (edgesByNode[nodeId] || []).forEach(idx => {
+    connectedEdges.add(idx);
+    const el = edgeEls[idx];
+    connectedNodes.add(parseInt(el.getAttribute('data-from')));
+    connectedNodes.add(parseInt(el.getAttribute('data-to')));
+  });
+
+  // Dim everything, then highlight connected
+  nodeEls.forEach(el => {
+    const id = parseInt(el.getAttribute('data-id'));
+    if (connectedNodes.has(id)) {
+      el.classList.add('highlighted');
+      el.classList.remove('dimmed');
+    } else {
+      el.classList.add('dimmed');
+      el.classList.remove('highlighted');
+    }
+  });
+
+  edgeEls.forEach((el, idx) => {
+    if (connectedEdges.has(idx)) {
+      el.classList.add('highlighted');
+      el.classList.remove('dimmed');
+    } else {
+      el.classList.add('dimmed');
+      el.classList.remove('highlighted');
+    }
+  });
+
+  labelEls.forEach(el => {
+    const forId = parseInt(el.getAttribute('data-label-for'));
+    if (connectedNodes.has(forId)) {
+      el.classList.remove('dimmed');
+    } else {
+      el.classList.add('dimmed');
+    }
+  });
+}
+
+function clearHighlight() {
+  nodeEls.forEach(el => {
+    el.classList.remove('highlighted', 'dimmed');
+    // Restore search match state
+    const id = parseInt(el.getAttribute('data-id'));
+    if (searchMatches.size > 0 && searchMatches.has(id)) {
+      el.classList.add('search-match');
+    }
+  });
+  edgeEls.forEach(el => el.classList.remove('highlighted', 'dimmed'));
+  labelEls.forEach(el => el.classList.remove('dimmed'));
+  // Reapply collapse hiding
+  applyVisibility();
+}
+
+function formatSize(bytes) {
+  if (bytes === 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let s = bytes;
+  let i = 0;
+  while (s >= 1024 && i < units.length - 1) { s /= 1024; i++; }
+  return i === 0 ? `${bytes} B` : `${s.toFixed(1)} ${units[i]}`;
+}
+
+function showTooltip(e, nodeId) {
+  const node = NODES[nodeId];
+  if (!node) return;
+  let html = `<div class="tt-name">${node.label}</div>`;
+  html += `<div class="tt-path">${node.fullPath}</div>`;
+  html += `<div class="tt-detail">Type: <span>${node.fileType}</span></div>`;
+  if (!node.isDir) {
+    html += `<div class="tt-detail">Size: <span>${formatSize(node.size)}</span></div>`;
+  }
+  if (node.isDir) {
+    const childCount = (CHILDREN_MAP[nodeId] || []).length;
+    const isCollapsed = collapsedDirs.has(nodeId);
+    html += `<div class="tt-detail">Children: <span>${childCount}</span></div>`;
+    html += `<div class="tt-hint">Click to ${isCollapsed ? 'expand' : 'collapse'}</div>`;
+  } else {
+    html += `<div class="tt-hint">Shift+drag to move</div>`;
+  }
+  tooltip.innerHTML = html;
+  tooltip.style.display = 'block';
+  moveTooltip(e);
+}
+
+function moveTooltip(e) {
+  const pad = 16;
+  let x = e.clientX + pad;
+  let y = e.clientY + pad;
+  // Keep tooltip in viewport
+  const rect = tooltip.getBoundingClientRect();
+  if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - pad;
+  if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - pad;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+
+function hideTooltip() {
+  tooltip.style.display = 'none';
+}
+
+// === Collapse / Expand Directories ===
+function getAllDescendants(nodeId) {
+  const descendants = new Set();
+  const queue = [...(CHILDREN_MAP[nodeId] || [])];
+  while (queue.length > 0) {
+    const id = queue.pop();
+    if (descendants.has(id)) continue;
+    descendants.add(id);
+    (CHILDREN_MAP[id] || []).forEach(child => queue.push(child));
+  }
+  return descendants;
+}
+
+function toggleCollapse(nodeId) {
+  if (collapsedDirs.has(nodeId)) {
+    collapsedDirs.delete(nodeId);
+  } else {
+    collapsedDirs.add(nodeId);
+  }
+  recomputeHidden();
+  applyVisibility();
+
+  // Update directory visual indicator
+  const el = nodeElById[nodeId];
+  if (el) {
+    if (collapsedDirs.has(nodeId)) {
+      el.classList.add('collapsed-dir');
+    } else {
+      el.classList.remove('collapsed-dir');
+    }
+  }
+}
+
+function recomputeHidden() {
+  hiddenNodes.clear();
+  collapsedDirs.forEach(dirId => {
+    getAllDescendants(dirId).forEach(id => hiddenNodes.add(id));
+  });
+}
+
+function applyVisibility() {
+  nodeEls.forEach(el => {
+    const id = parseInt(el.getAttribute('data-id'));
+    el.style.display = hiddenNodes.has(id) ? 'none' : '';
+  });
+  edgeEls.forEach(el => {
+    const from = parseInt(el.getAttribute('data-from'));
+    const to = parseInt(el.getAttribute('data-to'));
+    el.style.display = (hiddenNodes.has(from) || hiddenNodes.has(to)) ? 'none' : '';
+  });
+  labelEls.forEach(el => {
+    const forId = parseInt(el.getAttribute('data-label-for'));
+    el.style.display = hiddenNodes.has(forId) ? 'none' : '';
+  });
+}
+
+// === Search ===
+function handleSearch() {
+  const query = searchInput.value.trim().toLowerCase();
+  searchMatches.clear();
+
+  if (query === '') {
+    searchCount.textContent = '';
+    nodeEls.forEach(el => {
+      el.classList.remove('search-match', 'dimmed');
+    });
+    edgeEls.forEach(el => el.classList.remove('dimmed'));
+    labelEls.forEach(el => el.classList.remove('dimmed'));
+    return;
+  }
+
+  NODES.forEach(node => {
+    if (node.label.toLowerCase().includes(query) || node.fullPath.toLowerCase().includes(query)) {
+      searchMatches.add(node.id);
+    }
+  });
+
+  searchCount.textContent = `${searchMatches.size} match${searchMatches.size !== 1 ? 'es' : ''}`;
+
+  // Highlight matches, dim others
+  nodeEls.forEach(el => {
+    const id = parseInt(el.getAttribute('data-id'));
+    if (searchMatches.has(id)) {
+      el.classList.add('search-match');
+      el.classList.remove('dimmed');
+    } else {
+      el.classList.add('dimmed');
+      el.classList.remove('search-match');
+    }
+  });
+
+  edgeEls.forEach(el => {
+    const from = parseInt(el.getAttribute('data-from'));
+    const to = parseInt(el.getAttribute('data-to'));
+    if (searchMatches.has(from) && searchMatches.has(to)) {
+      el.classList.remove('dimmed');
+    } else {
+      el.classList.add('dimmed');
+    }
+  });
+
+  labelEls.forEach(el => {
+    const forId = parseInt(el.getAttribute('data-label-for'));
+    if (searchMatches.has(forId)) {
+      el.classList.remove('dimmed');
+    } else {
+      el.classList.add('dimmed');
+    }
+  });
+
+  // Auto-pan to first match
+  if (searchMatches.size > 0) {
+    const firstId = searchMatches.values().next().value;
+    panToNode(firstId);
+  }
+}
+
+function panToNode(nodeId) {
+  const node = NODES[nodeId];
+  if (!node) return;
+  const svgW = parseFloat(svg.getAttribute('viewBox').split(' ')[2]);
+  const svgH = parseFloat(svg.getAttribute('viewBox').split(' ')[3]);
+  // Center the node in the viewport
+  const targetScale = Math.max(scale, 1.5);
+  panX = svgW / 2 - node.x * targetScale;
+  panY = svgH / 2 - node.y * targetScale;
+  scale = targetScale;
+  applyTransform();
+}
+
+searchInput.addEventListener('input', handleSearch);
+
+// === Keyboard shortcuts ===
+document.addEventListener('keydown', (e) => {
+  // Ctrl+F or Cmd+F => focus search
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  }
+  // Escape => clear search, reset view
+  if (e.key === 'Escape') {
+    searchInput.value = '';
+    searchInput.blur();
+    handleSearch();
+    // Reset pan/zoom
+    scale = 1;
+    panX = 0;
+    panY = 0;
+    applyTransform();
+    // Clear collapsed
+    collapsedDirs.clear();
+    recomputeHidden();
+    applyVisibility();
+    nodeEls.forEach(el => el.classList.remove('collapsed-dir'));
+  }
+});
+
+// === Fit to view on load ===
+(function() {
+  if (NODES.length === 0) return;
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  NODES.forEach(n => {
+    if (n.x - n.r < minX) minX = n.x - n.r;
+    if (n.x + n.r > maxX) maxX = n.x + n.r;
+    if (n.y - n.r < minY) minY = n.y - n.r;
+    if (n.y + n.r > maxY) maxY = n.y + n.r;
+  });
+  const svgW = parseFloat(svg.getAttribute('viewBox').split(' ')[2]);
+  const svgH = parseFloat(svg.getAttribute('viewBox').split(' ')[3]);
+  const graphW = maxX - minX || 1;
+  const graphH = maxY - minY || 1;
+  const padding = 60;
+  const sx = (svgW - padding * 2) / graphW;
+  const sy = (svgH - padding * 2) / graphH;
+  scale = Math.min(sx, sy, 3);
+  panX = (svgW - graphW * scale) / 2 - minX * scale;
+  panY = (svgH - graphH * scale) / 2 - minY * scale;
+  applyTransform();
+})();
+</script>
+</body>
+</html>

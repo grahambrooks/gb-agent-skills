@@ -6,7 +6,6 @@ This document lists all available Claude Code plugins in this marketplace.
 - [Architecture](#architecture-plugin)
 - [Code Intelligence](#code-intelligence-plugin)
 - [Docs And Diagrams](#docs-and-diagrams-plugin)
-- [Myspec](#myspec-plugin)
 - [Refactoring](#refactoring-plugin)
 
 ### Api Contracts Plugin
@@ -32,12 +31,6 @@ See [plugins/code-intelligence/README.md](plugins/code-intelligence/README.md) f
 Author documentation that renders with Graham's text-to-document tools, starting with the adoc AsciiDoc processor.
 
 See [plugins/docs-and-diagrams/README.md](plugins/docs-and-diagrams/README.md) for detailed documentation.
-
-### Myspec Plugin
-
-Repository events pushed into your running session: commits, branch changes, refused gates, approvals and archives. Adds the myspec MCP server, which doubles as a Claude Code channel.
-
-See [plugins/myspec/README.md](plugins/myspec/README.md) for detailed documentation.
 
 ### Refactoring Plugin
 

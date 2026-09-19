@@ -1,8 +1,0 @@
-{
-  "name": "myspec",
-  "description": "Repository events pushed into your running session: commits, branch changes, refused gates, approvals and archives. Adds the myspec MCP server, which doubles as a Claude Code channel.",
-  "version": "0.1.0",
-  "author": {
-    "name": "Graham Brooks"
-  }
-}

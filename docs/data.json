@@ -26,17 +26,6 @@
       "has_mcp": true
     },
     {
-      "name": "myspec",
-      "description": "Repository events pushed into your running session, and the myspec spec-driven workflow's MCP tools.",
-      "version": "0.1.0",
-      "commands": [],
-      "skills": [],
-      "hooks": [],
-      "agents": [],
-      "has_readme": true,
-      "has_mcp": true
-    },
-    {
       "name": "architecture",
       "description": "Design and enforce architecture: the forge modelling MCP server and skills, plus tropism's dependency-rule skills.",
       "version": "0.1.0",

@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "myspec": {
-      "type": "stdio",
-      "command": "myspec",
-      "args": ["mcp"]
-    }
-  }
-}

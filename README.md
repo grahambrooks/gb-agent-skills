@@ -29,7 +29,6 @@ Install a specific plugin:
 | [api-contracts](plugins/api-contracts/README.md) | [brake](https://github.com/grahambrooks/brake) (MCP) | Catching breaking OpenAPI, protobuf and GraphQL changes while drafting them. |
 | [refactoring](plugins/refactoring/README.md) | [colab](https://github.com/grahambrooks/colab) | Mechanical, repo-wide code changes with AST-aware codemods (build mode). |
 | [docs-and-diagrams](plugins/docs-and-diagrams/README.md) | [adoc](https://github.com/grahambrooks/adoc) | Writing documentation that renders with Graham's text-to-document tools. |
-| [myspec](plugins/myspec/README.md) | [myspec](https://github.com/grahambrooks/myspec) (MCP, channel) | Repository events pushed into the running session. |
 
 ## How tools are grouped
 
@@ -48,7 +47,8 @@ unit it can switch, so the groups follow from that:
 5. **Names are an interface.** MCP tools are named `mcp__plugin_<plugin>_<server>__*`, and those names end up in
    skills' `allowed-tools` and in myspec allowlists. Renaming a plugin breaks them.
 
-Private tools are published from a separate, private marketplace rather than listed here.
+Private tools are published from a separate, private marketplace rather than listed here —
+including the `myspec` plugin, since myspec itself is a private repository.
 
 ## Development
 

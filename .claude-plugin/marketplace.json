@@ -27,26 +27,6 @@
       ]
     },
     {
-      "name": "myspec",
-      "source": "./plugins/myspec",
-      "description": "Repository events pushed into your running session, and the myspec spec-driven workflow's MCP tools.",
-      "version": "0.1.0",
-      "author": {
-        "name": "Graham Brooks"
-      },
-      "homepage": "https://github.com/grahambrooks/gb-agent-skills",
-      "repository": "https://github.com/grahambrooks/gb-agent-skills",
-      "license": "MIT",
-      "category": "developer-tools",
-      "keywords": [
-        "myspec",
-        "channel",
-        "mcp",
-        "spec-driven-development",
-        "events"
-      ]
-    },
-    {
       "name": "architecture",
       "source": "./plugins/architecture",
       "description": "Design and enforce architecture: the forge modelling MCP server and skills, plus tropism's dependency-rule skills.",
