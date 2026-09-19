@@ -2,7 +2,7 @@
 name: tropism-in-the-loop
 description: Use tropism to check architectural boundaries while writing code — before adding an import, after a refactor, or before finishing a task — and interpret its findings correctly, including which checks are trustworthy enough to act on and which are advisory. Use this whenever working in a repository that has a tropism.toml, whenever about to add a dependency or an import that crosses a module boundary, whenever a tropism check or pre-commit hook fails and the finding needs acting on, and whenever a refactor moves files between modules. Also use it when asked to keep a change within the architecture, to check whether something is allowed to import something else, or when a build fails with a module-rule or package-rule finding.
 ---
-<!-- Synced from grahambrooks/tropism@v2026.9.2 (skills/tropism-in-the-loop) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/tropism@v2026.9.3 (skills/tropism-in-the-loop) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # tropism in the loop
 

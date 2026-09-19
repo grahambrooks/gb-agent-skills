@@ -1,0 +1,8 @@
+{
+  "name": "refactoring",
+  "description": "Mechanical, repo-wide code changes with colab's AST-aware codemods: write the script, check the blast radius, apply safely.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Graham Brooks"
+  }
+}

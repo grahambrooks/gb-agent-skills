@@ -2,7 +2,7 @@
 name: authoring-architecture-rules
 description: Write or repair a tropism.toml ruleset that encodes a repository's intended architecture — module boundaries, layering, and package policy — derived from what the code actually contains rather than from a template. Use this whenever someone wants to enforce architectural boundaries, stop layers reaching past each other, ban or scope a dependency, prevent modules becoming entangled, add tropism to a project, or fix a ruleset that errors or reports rules as stale. Also use it when someone describes an architecture rule in prose ("the API shouldn't touch the database directly", "keep the UI framework out of the domain", "these two services must stay independent") and wants it enforced, even if they never mention tropism or tropism.toml by name.
 ---
-<!-- Synced from grahambrooks/tropism@v2026.9.2 (skills/authoring-architecture-rules) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/tropism@v2026.9.3 (skills/authoring-architecture-rules) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # Authoring a tropism ruleset
 

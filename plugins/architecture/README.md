@@ -16,8 +16,8 @@ deployment); tropism enforces its dependency rules (module boundaries, layering,
   search it, render SVG, and lint it (`forge_check`).
 - **forge skills** — `model-repository`, `forge-dsl`, `architecture-review`.
 - **tropism skills** — `tropism-in-the-loop`, `authoring-architecture-rules`, `reporting-tropism-issues`. These
-  drive the `tropism` CLI, which must be on `PATH` (see tropism's README for install options). A tropism MCP
-  server will be added once its release can be launched by bx.
+  drive the `tropism` CLI, which must be on `PATH` (see tropism's README for install options). tropism's MCP
+  server ships in its release but is not implemented yet; it joins when it is.
 - **SessionStart hook** — warns if `bx` is missing.
 
 ## Install

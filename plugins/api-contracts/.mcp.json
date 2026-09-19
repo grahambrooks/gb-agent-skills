@@ -4,7 +4,7 @@
       "type": "stdio",
       "command": "bx",
       "args": [
-        "grahambrooks/brake@v2026.9.2",
+        "grahambrooks/brake@v2026.9.3",
         "--",
         "mcp"
       ]

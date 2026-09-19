@@ -2,7 +2,7 @@
 name: forge-dsl
 description: Author or edit Forge `.forge` DSL files — the source of truth for a Forge architecture model. Use when the user asks to "write a .forge file", "add a container to the model", "fix a syntax error", "rename an element", or any direct editing of `.forge` / `.forge-rules` content. Pairs with model-repository (to generate) and architecture-review (to query).
 ---
-<!-- Synced from grahambrooks/forge@v2026.9.7 (integrations/claude-plugin/forge-architect/skills/forge-dsl) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/forge@v2026.9.8 (integrations/claude-plugin/forge-architect/skills/forge-dsl) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # Forge DSL Authoring
 

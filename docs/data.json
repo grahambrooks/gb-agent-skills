@@ -126,6 +126,23 @@
       "agents": [],
       "has_readme": true,
       "has_mcp": false
+    },
+    {
+      "name": "refactoring",
+      "description": "Mechanical, repo-wide code changes with colab's AST-aware codemods: write the script, check the blast radius, apply safely.",
+      "version": "0.1.0",
+      "commands": [],
+      "skills": [
+        {
+          "name": "colab-codemod",
+          "id": "colab-codemod",
+          "description": "Run a mechanical, repo-wide code change with colab instead of editing files one at a time. Use when a rename or sweep touches many files and the change is structural \u2014 an import path, a dependency name, a symbol, a Java package, a Go struct tag, a call site. Covers writing the .codemod script, checking blast radius, and applying safely, via the CLI or the MCP tools."
+        }
+      ],
+      "hooks": [],
+      "agents": [],
+      "has_readme": true,
+      "has_mcp": false
     }
   ]
 }

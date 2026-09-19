@@ -27,6 +27,7 @@ Install a specific plugin:
 | [code-intelligence](plugins/code-intelligence/README.md) | [symgraph](https://github.com/grahambrooks/symgraph) (MCP) | Navigating code: symbols, callers, impact, coupling. Ships `explore-code` and a SessionStart hook that indexes new projects. |
 | [architecture](plugins/architecture/README.md) | [forge](https://github.com/grahambrooks/forge) (MCP), [tropism](https://github.com/grahambrooks/tropism) | Modelling the intended architecture and keeping dependencies inside it. |
 | [api-contracts](plugins/api-contracts/README.md) | [brake](https://github.com/grahambrooks/brake) (MCP) | Catching breaking OpenAPI, protobuf and GraphQL changes while drafting them. |
+| [refactoring](plugins/refactoring/README.md) | [colab](https://github.com/grahambrooks/colab) | Mechanical, repo-wide code changes with AST-aware codemods (build mode). |
 | [docs-and-diagrams](plugins/docs-and-diagrams/README.md) | [adoc](https://github.com/grahambrooks/adoc) | Writing documentation that renders with Graham's text-to-document tools. |
 | [myspec](plugins/myspec/README.md) | [myspec](https://github.com/grahambrooks/myspec) (MCP, channel) | Repository events pushed into the running session. |
 

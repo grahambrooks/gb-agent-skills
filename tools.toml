@@ -21,15 +21,15 @@ name = "architecture"
 
   [[plugin.tool]]
   repo = "forge"
-  ref = "v2026.9.7"
+  ref = "v2026.9.8"
   skills = "integrations/claude-plugin/forge-architect/skills"
   mcp = { server = "forge", args = ["mcp"] }
 
-  # No MCP yet: the release tarball nests the binary in a subdirectory bx does not
-  # search, and tropism-mcp is not shipped. The skills drive the `tropism` CLI.
+  # No MCP yet: tropism-mcp ships in the release but is a stub ("not implemented
+  # yet", build-order step 6). The skills drive the `tropism` CLI.
   [[plugin.tool]]
   repo = "tropism"
-  ref = "v2026.9.2"
+  ref = "v2026.9.3"
   skills = "skills"
 
 [[plugin]]
@@ -37,7 +37,7 @@ name = "api-contracts"
 
   [[plugin.tool]]
   repo = "brake"
-  ref = "v2026.9.2"
+  ref = "v2026.9.3"
   skills = ".claude/skills"
   mcp = { server = "brake", args = ["mcp"] }
 
@@ -46,5 +46,17 @@ name = "docs-and-diagrams"
 
   [[plugin.tool]]
   repo = "adoc"
-  ref = "2026.9.9"
+  ref = "v2026.9.10"
   skill = "docs/genai/claude-skill"
+
+[[plugin]]
+name = "refactoring"
+
+  # The skill drives the colab CLI. colab's MCP server is left out until it speaks
+  # MCP's newline-delimited stdio framing; it currently uses LSP-style
+  # Content-Length headers, which Claude Code cannot read. colab-extend (in the
+  # same directory) is for developing colab itself, so only colab-codemod is synced.
+  [[plugin.tool]]
+  repo = "colab"
+  ref = "v2026.9.2"
+  skill = ".claude/skills/colab-codemod"

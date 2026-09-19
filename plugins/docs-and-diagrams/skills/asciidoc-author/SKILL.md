@@ -2,7 +2,7 @@
 name: asciidoc-author
 description: Use this skill when authoring or editing AsciiDoc documents in projects that use the `adoc` Rust CLI to render them. Covers the working subset of AsciiDoc that `adoc` supports, common pitfalls, the lint-loop workflow, and the AST/chunks/schema entry points for tooling integrations. Invoke whenever the user's task involves writing `.adoc` files, validating AsciiDoc, generating chunks for retrieval, or producing AST-shaped output for downstream tools.
 ---
-<!-- Synced from grahambrooks/adoc@2026.9.9 (docs/genai/claude-skill) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/adoc@v2026.9.10 (docs/genai/claude-skill) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # Authoring AsciiDoc for `adoc`
 

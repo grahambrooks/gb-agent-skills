@@ -2,13 +2,13 @@
   "plugins": {
     "api-contracts": {
       "files": {
-        ".mcp.json": "c49171b605328c0880eaf8fbe0d0fe4023a80e698cf73ba89bc81ec3b4058c01",
+        ".mcp.json": "6c6dfe3238d6c6ab530736af87917054481caa603e719e87110899a320c35689",
         "hooks/check-bx.sh": "ec584b1eb180b65f6d512e1f8034f937084c7ed1d00dad93f83695254b0dad4b",
         "hooks/hooks.json": "72fda9b25eacea987f9fc92f661fb150e6736e77b02c0079d291c0eaef85563c",
-        "skills/api-compatibility/SKILL.md": "23275731da182a350bf516509201a2994bf222bd5fe1eeab4772906980112f37",
-        "skills/brake-adopt/SKILL.md": "452e3b7613ffa40d811a8d4b3f1bbb83340ce0b43b30e5905ca4173069207f66",
-        "skills/brake-consumer-impact/SKILL.md": "c91868a2abc0b7bb0ef657efe3e36ac954241b056530fbb635f7a75090eb0d51",
-        "skills/brake-triage/SKILL.md": "33a1cdd6212905506778f292da828d44a1b1cf85f44b22617f4317065a4684c7"
+        "skills/api-compatibility/SKILL.md": "23c05191126d09fa570cb2aadcbe570753f3266222504982ba05ae7ce7532628",
+        "skills/brake-adopt/SKILL.md": "f8b3e8671922210de0699caf53ae4b19dac78117744b1ef8d29614be0898fd8e",
+        "skills/brake-consumer-impact/SKILL.md": "99b77814d06de559f5b83bcaa935585acccf5f62e06e3b152fc9fc90daab2107",
+        "skills/brake-triage/SKILL.md": "48095a120e275c211f4ac660c8d2047b7ce026b294ea7be900910fa57ac84638"
       },
       "tools": [
         {
@@ -18,7 +18,7 @@
             ],
             "server": "brake"
           },
-          "ref": "v2026.9.2",
+          "ref": "v2026.9.3",
           "repo": "brake",
           "skills": ".claude/skills"
         }
@@ -26,21 +26,21 @@
     },
     "architecture": {
       "files": {
-        ".mcp.json": "b78fdfcc3952d1df303921873955c4a7b6ed6af3077f7858a180d943aa40b0f4",
+        ".mcp.json": "1feb4887311998cf1af1de93430cc59f476b1814ac13509b4b45722746c3195b",
         "hooks/check-bx.sh": "373fd7adeff6e39fd23dcd30cc54987a251dd31787f8ba6125c1bf7fba485b02",
         "hooks/hooks.json": "72fda9b25eacea987f9fc92f661fb150e6736e77b02c0079d291c0eaef85563c",
-        "skills/architecture-review/SKILL.md": "3b8b2682dada7c362ccfb72596ebfe609891be45bb71c6811bc5df0f29dccb01",
+        "skills/architecture-review/SKILL.md": "6b0f16f13afb753131bf1044a55607739e51c4d9f8569699626c194a7e20d7c6",
         "skills/architecture-review/references/check-rules.md": "9d69f852f6a946af1f80c712b3cb09609765ec9644b8b8edc6d1229b113fd6bb",
-        "skills/authoring-architecture-rules/SKILL.md": "afacddc06de8f51e51d8c395664c33b7b20b855feb26bbe3c024f6594502e118",
+        "skills/authoring-architecture-rules/SKILL.md": "1047e17d6d276b358c522c97513e2509def13baf0db2a9d04df8fa0f60b3396c",
         "skills/authoring-architecture-rules/references/rule-reference.md": "3f61a709684fc2ca1beeba841d192189ac893c517b3d1e11f200ddd746c101b3",
-        "skills/forge-dsl/SKILL.md": "57f6762ee039541d3422455afb0922a45483d5a924680c11e24173bc1028a051",
+        "skills/forge-dsl/SKILL.md": "cd222f8ceb53ef344b00404896e35f64ad962a3e59bc880b46dfbc4848b93353",
         "skills/forge-dsl/references/examples.md": "12cad510c4ee7205899585bc5ec7fc3dd85e5f44139121b868a29c06483bf723",
         "skills/forge-dsl/references/grammar.md": "5ed5c84e7233f049454bc4f4c1e51bafbd8512f901ef48c597290a6aebbd705e",
-        "skills/model-repository/SKILL.md": "da58044d7b89f1ceb084ff8fcf2e6a4be2e41aadf15377853f1fb45d02c82e15",
+        "skills/model-repository/SKILL.md": "32f01a2121f05d7def401c7638a4c8b0c9c14ad67b99f974adc9d9ffd9a425c5",
         "skills/model-repository/references/analyze-options.md": "a16a2fdd8afbf71f36b96f88a3794b31d33e151631d01f9c1c53351161262f6b",
-        "skills/reporting-tropism-issues/SKILL.md": "f4ba2dbebca77bac3bb8b6681176f09285aaa9ed207b6adac1a7c90a97bb7f82",
+        "skills/reporting-tropism-issues/SKILL.md": "f4d2c5cd777a21778428b520fcb5a22d6f2d42428a25df9c310ebf7f6b360e50",
         "skills/reporting-tropism-issues/references/known-limitations.md": "238dad0df11c57f413b8d42dc8e0983eddc7876d6a4cfe858e4027f126bc17e6",
-        "skills/tropism-in-the-loop/SKILL.md": "37d322156f05399400f54cebc7e5cc8e6f6e31d64cfb7d70edbe4ecb581c117b"
+        "skills/tropism-in-the-loop/SKILL.md": "f0a863e089c84d5be10c4e614bb4f1f4a8405e9c98edb7a4a1aa7982935b4202"
       },
       "tools": [
         {
@@ -50,12 +50,12 @@
             ],
             "server": "forge"
           },
-          "ref": "v2026.9.7",
+          "ref": "v2026.9.8",
           "repo": "forge",
           "skills": "integrations/claude-plugin/forge-architect/skills"
         },
         {
-          "ref": "v2026.9.2",
+          "ref": "v2026.9.3",
           "repo": "tropism",
           "skills": "skills"
         }
@@ -63,13 +63,27 @@
     },
     "docs-and-diagrams": {
       "files": {
-        "skills/asciidoc-author/SKILL.md": "c547bc2e39c533dbb2301aa7a0eb6778f0e8f7c3321073d3538a492934ec4623"
+        "skills/asciidoc-author/SKILL.md": "8986e37ac073b28727a3f7118ee588ff43ed3899e910520d13ca019d6e96a930"
       },
       "tools": [
         {
-          "ref": "2026.9.9",
+          "ref": "v2026.9.10",
           "repo": "adoc",
           "skill": "docs/genai/claude-skill"
+        }
+      ]
+    },
+    "refactoring": {
+      "files": {
+        "skills/colab-codemod/SKILL.md": "68d8444e26d480661121ccad0ec164f1c53126abaf4aae4763003e914e9b11a7",
+        "skills/colab-codemod/references/recipes.md": "d3566a8787283fe3bef15d96f6c28c2a906115a993031f19ea824c3de9bc2c48",
+        "skills/colab-codemod/references/troubleshooting.md": "a88004766039100112eaccb120ac4e33092323c4d48a511a695a6fa0dc6f43a2"
+      },
+      "tools": [
+        {
+          "ref": "v2026.9.2",
+          "repo": "colab",
+          "skill": ".claude/skills/colab-codemod"
         }
       ]
     }

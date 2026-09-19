@@ -107,6 +107,25 @@
         "adoc",
         "diagrams"
       ]
+    },
+    {
+      "author": {
+        "name": "Graham Brooks"
+      },
+      "homepage": "https://github.com/grahambrooks/gb-agent-skills",
+      "repository": "https://github.com/grahambrooks/gb-agent-skills",
+      "license": "MIT",
+      "category": "developer-tools",
+      "name": "refactoring",
+      "source": "./plugins/refactoring",
+      "description": "Mechanical, repo-wide code changes with colab's AST-aware codemods: write the script, check the blast radius, apply safely.",
+      "version": "0.1.0",
+      "keywords": [
+        "refactoring",
+        "codemod",
+        "colab",
+        "tree-sitter"
+      ]
     }
   ]
 }

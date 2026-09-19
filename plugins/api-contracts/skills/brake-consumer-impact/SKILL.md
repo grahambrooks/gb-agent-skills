@@ -3,7 +3,7 @@ name: brake-consumer-impact
 description: Find out which declared consumers use an API endpoint or field before removing, renaming or narrowing it, using brake's consumer demand inventory (pact files, GraphQL operation documents, brake-uses manifests). Use when asked "who uses this endpoint?", "is anyone reading this field?", "can we drop this response field?", "what breaks if I remove this?", or before deleting anything from an OpenAPI, protobuf or GraphQL contract.
 argument-hint: "<endpoint or field, e.g. GET /payments/{id} customer_id>"
 ---
-<!-- Synced from grahambrooks/brake@v2026.9.2 (.claude/skills/brake-consumer-impact) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/brake@v2026.9.3 (.claude/skills/brake-consumer-impact) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # Who breaks if this goes away
 

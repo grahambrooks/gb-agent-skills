@@ -3,7 +3,7 @@ name: brake-adopt
 description: Set up brake in a repository so breaking API changes are caught at commit time and in CI — run brake init, write brake.toml, choose baselines and a compatibility level, install the pre-commit hook, and add the CI jobs. Use when asked to add API compatibility checking, prevent breaking changes to an API, gate an OpenAPI/protobuf/GraphQL contract, set up brake, or stop clients being broken by a spec change.
 argument-hint: "[path to the contracts]"
 ---
-<!-- Synced from grahambrooks/brake@v2026.9.2 (.claude/skills/brake-adopt) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/brake@v2026.9.3 (.claude/skills/brake-adopt) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # Adopting brake in a repository
 

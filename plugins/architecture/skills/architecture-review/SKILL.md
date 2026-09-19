@@ -2,7 +2,7 @@
 name: architecture-review
 description: Review an existing Forge model — answer architecture questions, check for smells, and summarise a system's structure. Use this when the user asks to "review the architecture", "audit the model", "explain how service X fits in", "find coupling issues", "check for data-classification violations", or drills into a specific container/component in a `.forge` file. Requires a model already loaded (see model-repository to create one).
 ---
-<!-- Synced from grahambrooks/forge@v2026.9.7 (integrations/claude-plugin/forge-architect/skills/architecture-review) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/forge@v2026.9.8 (integrations/claude-plugin/forge-architect/skills/architecture-review) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # Architecture Review with Forge
 

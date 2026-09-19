@@ -2,7 +2,7 @@
 name: model-repository
 description: Produce a Forge architecture model (C4 + process + deployment) from a repository. Use this when the user asks to "model this repo", "diagram the architecture", "generate a C4 model", "create a forge model", "analyze this codebase architecturally", "produce an architecture doc site", or any variant of inferring architecture from source. Invokes `forge analyze` and the Forge MCP server.
 ---
-<!-- Synced from grahambrooks/forge@v2026.9.7 (integrations/claude-plugin/forge-architect/skills/model-repository) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/forge@v2026.9.8 (integrations/claude-plugin/forge-architect/skills/model-repository) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # Model a Repository with Forge
 

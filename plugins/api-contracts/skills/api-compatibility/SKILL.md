@@ -3,7 +3,7 @@ name: api-compatibility
 description: Check whether a change to an API contract would break its consumers, using brake, before the change is written. Use when editing, generating or reviewing an OpenAPI/Swagger document, a .proto file, a GraphQL SDL schema, or an AsyncAPI document — removing or renaming a field, changing a type, adding a required parameter, changing a status code, tightening security — or when asked "is this change backward compatible?", "will this break clients?", or "can I remove this field?".
 argument-hint: "<the contract file or the change you are about to make>"
 ---
-<!-- Synced from grahambrooks/brake@v2026.9.2 (.claude/skills/api-compatibility) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/brake@v2026.9.3 (.claude/skills/api-compatibility) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # Checking an API change for backward compatibility
 

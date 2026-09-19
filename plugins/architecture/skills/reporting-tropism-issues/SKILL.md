@@ -2,7 +2,7 @@
 name: reporting-tropism-issues
 description: Turn an experience of using tropism — a false positive, a check that would not run, a missing language or ecosystem, a wish for a feature — into a bug report or feature request that can actually be acted on, after first checking whether the behaviour is a known structural limit rather than a defect. Use this whenever someone is frustrated by a tropism finding, thinks tropism got something wrong, wants tropism to support something it does not, says a check reported "unavailable" and they do not know why, or asks how to report a problem or request a feature. Also use it before filing any issue against tropism, so a known limitation is not re-reported as a bug.
 ---
-<!-- Synced from grahambrooks/tropism@v2026.9.2 (skills/reporting-tropism-issues) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/tropism@v2026.9.3 (skills/reporting-tropism-issues) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # Reporting a tropism issue
 

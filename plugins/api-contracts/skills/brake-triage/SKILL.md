@@ -3,7 +3,7 @@ name: brake-triage
 description: Diagnose and resolve a brake finding that is blocking a commit, a pre-commit hook or a CI job — an error like response-field-removed, endpoint-removed, param-added-required, field-number-changed, consumer-field-unmet, contract-unreachable, stale-allow or generated-drift. Use when a brake run failed, when the pre-commit hook rejected a change to an API contract, or when asked to fix, understand or suppress a brake error.
 argument-hint: "<the rule id or the output brake printed>"
 ---
-<!-- Synced from grahambrooks/brake@v2026.9.2 (.claude/skills/brake-triage) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/brake@v2026.9.3 (.claude/skills/brake-triage) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # A brake finding is blocking the change
 
