@@ -1,0 +1,19 @@
+scripts/sync_tool_skills.py
+  s_58a2383c561445::t_74251e64d1b797 10-11,204-205
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "829f9ce7ecf0eaa2c3f0a5b6b3b43ff59d019a0e",
+  "prompts": {},
+  "sessions": {
+    "s_58a2383c561445": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7d5dfd7b-f2f0-43a7-a1c4-efe732817d53",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Graham Brooks <graham@grahambrooks.com>"
+    }
+  }
+}
