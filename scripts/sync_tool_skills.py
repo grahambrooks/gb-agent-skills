@@ -7,7 +7,8 @@ Sync tool-owned skills into this marketplace's plugins, as declared in tools.tom
 
 Per tool, `skills`/`skill` (skill directories), `commands` (a directory of
 slash-command .md files) and `mcp` (a server launched through bx at the pinned
-ref; `bin` names the binary when it is not named after the repo) and `lsp` (a
+ref; `bin` names the binary when it is not named after the repo, `env` sets its
+environment) and `lsp` (a
 language server, same launch fields plus `extensions`, mapping file extensions
 to language ids for .lsp.json) are each optional. A top-level `requires_github_token = true` (private marketplaces)
 makes the generated SessionStart hook also warn when bx has no GITHUB_TOKEN to
@@ -200,7 +201,8 @@ def sync() -> None:
 
         if servers:
             mcp = {"mcpServers": {
-                t["mcp"]["server"]: {"type": "stdio", "command": "bx", "args": bx_args(t, t["mcp"])}
+                t["mcp"]["server"]: {"type": "stdio", "command": "bx", "args": bx_args(t, t["mcp"]),
+                                     **({"env": t["mcp"]["env"]} if t["mcp"].get("env") else {})}
                 for t in tools if "mcp" in t
             }}
             files[".mcp.json"] = (json.dumps(mcp, indent=2) + "\n").encode()
