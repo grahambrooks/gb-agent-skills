@@ -24,8 +24,12 @@ lint-pull: ## Pull the latest claudelint image
 	@echo "Pulling latest claudelint image..."
 	$(CONTAINER_RUNTIME) pull $(CLAUDELINT_IMAGE)
 
+.PHONY: sync-tools
+sync-tools: ## Sync tool-owned skills and MCP config into plugins at the tags pinned in tools.toml
+	@python3 scripts/sync_tool_skills.py
+
 .PHONY: update
-update: ## Update plugin documentation and website data
+update: sync-tools ## Sync tool skills, then update plugin documentation and website data
 	@echo "Updating plugin documentation..."
 	@python3 scripts/generate_plugin_docs.py
 	@echo "Building website data..."

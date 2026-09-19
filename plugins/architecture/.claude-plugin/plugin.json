@@ -1,0 +1,8 @@
+{
+  "name": "architecture",
+  "description": "Design and enforce architecture: the forge modelling MCP server and skills, plus tropism's dependency-rule skills.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Graham Brooks"
+  }
+}

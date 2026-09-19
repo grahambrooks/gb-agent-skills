@@ -1,0 +1,62 @@
+# claudelint defaults (LinterConfig.default()) plus this repo's custom rules.
+# A config file replaces the defaults, so every default rule is listed explicitly.
+rules:
+  plugin-json-required:
+    enabled: true
+    severity: error
+  plugin-json-valid:
+    enabled: true
+    severity: error
+    recommended-fields:
+    - description
+    - version
+    - author
+  plugin-naming:
+    enabled: true
+    severity: warning
+  commands-dir-required:
+    enabled: false
+    severity: warning
+  commands-exist:
+    enabled: false
+    severity: info
+  command-naming:
+    enabled: true
+    severity: warning
+  command-frontmatter:
+    enabled: true
+    severity: error
+  command-sections:
+    enabled: true
+    severity: warning
+  command-name-format:
+    enabled: true
+    severity: warning
+  marketplace-json-valid:
+    enabled: auto
+    severity: error
+  marketplace-registration:
+    enabled: auto
+    severity: error
+  plugin-readme:
+    enabled: true
+    severity: warning
+  skill-frontmatter:
+    enabled: true
+    severity: warning
+  agent-frontmatter:
+    enabled: true
+    severity: error
+  hooks-json-valid:
+    enabled: true
+    severity: error
+  mcp-valid-json:
+    enabled: true
+    severity: error
+  mcp-prohibited:
+    enabled: false
+    severity: error
+custom-rules:
+- .claudelint-custom.py
+exclude: []
+strict: false

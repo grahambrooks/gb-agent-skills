@@ -1,0 +1,8 @@
+{
+  "name": "api-contracts",
+  "description": "Catch breaking API changes while drafting them: the brake MCP server and skills for OpenAPI, protobuf and GraphQL.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Graham Brooks"
+  }
+}

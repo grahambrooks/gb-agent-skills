@@ -1,0 +1,8 @@
+{
+  "name": "docs-and-diagrams",
+  "description": "Author documentation that renders with Graham's text-to-document tools, starting with the adoc AsciiDoc processor.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Graham Brooks"
+  }
+}

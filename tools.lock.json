@@ -1,0 +1,77 @@
+{
+  "plugins": {
+    "api-contracts": {
+      "files": {
+        ".mcp.json": "c49171b605328c0880eaf8fbe0d0fe4023a80e698cf73ba89bc81ec3b4058c01",
+        "hooks/check-bx.sh": "ec584b1eb180b65f6d512e1f8034f937084c7ed1d00dad93f83695254b0dad4b",
+        "hooks/hooks.json": "72fda9b25eacea987f9fc92f661fb150e6736e77b02c0079d291c0eaef85563c",
+        "skills/api-compatibility/SKILL.md": "23275731da182a350bf516509201a2994bf222bd5fe1eeab4772906980112f37",
+        "skills/brake-adopt/SKILL.md": "452e3b7613ffa40d811a8d4b3f1bbb83340ce0b43b30e5905ca4173069207f66",
+        "skills/brake-consumer-impact/SKILL.md": "c91868a2abc0b7bb0ef657efe3e36ac954241b056530fbb635f7a75090eb0d51",
+        "skills/brake-triage/SKILL.md": "33a1cdd6212905506778f292da828d44a1b1cf85f44b22617f4317065a4684c7"
+      },
+      "tools": [
+        {
+          "mcp": {
+            "args": [
+              "mcp"
+            ],
+            "server": "brake"
+          },
+          "ref": "v2026.9.2",
+          "repo": "brake",
+          "skills": ".claude/skills"
+        }
+      ]
+    },
+    "architecture": {
+      "files": {
+        ".mcp.json": "b78fdfcc3952d1df303921873955c4a7b6ed6af3077f7858a180d943aa40b0f4",
+        "hooks/check-bx.sh": "373fd7adeff6e39fd23dcd30cc54987a251dd31787f8ba6125c1bf7fba485b02",
+        "hooks/hooks.json": "72fda9b25eacea987f9fc92f661fb150e6736e77b02c0079d291c0eaef85563c",
+        "skills/architecture-review/SKILL.md": "3b8b2682dada7c362ccfb72596ebfe609891be45bb71c6811bc5df0f29dccb01",
+        "skills/architecture-review/references/check-rules.md": "9d69f852f6a946af1f80c712b3cb09609765ec9644b8b8edc6d1229b113fd6bb",
+        "skills/authoring-architecture-rules/SKILL.md": "afacddc06de8f51e51d8c395664c33b7b20b855feb26bbe3c024f6594502e118",
+        "skills/authoring-architecture-rules/references/rule-reference.md": "3f61a709684fc2ca1beeba841d192189ac893c517b3d1e11f200ddd746c101b3",
+        "skills/forge-dsl/SKILL.md": "57f6762ee039541d3422455afb0922a45483d5a924680c11e24173bc1028a051",
+        "skills/forge-dsl/references/examples.md": "12cad510c4ee7205899585bc5ec7fc3dd85e5f44139121b868a29c06483bf723",
+        "skills/forge-dsl/references/grammar.md": "5ed5c84e7233f049454bc4f4c1e51bafbd8512f901ef48c597290a6aebbd705e",
+        "skills/model-repository/SKILL.md": "da58044d7b89f1ceb084ff8fcf2e6a4be2e41aadf15377853f1fb45d02c82e15",
+        "skills/model-repository/references/analyze-options.md": "a16a2fdd8afbf71f36b96f88a3794b31d33e151631d01f9c1c53351161262f6b",
+        "skills/reporting-tropism-issues/SKILL.md": "f4ba2dbebca77bac3bb8b6681176f09285aaa9ed207b6adac1a7c90a97bb7f82",
+        "skills/reporting-tropism-issues/references/known-limitations.md": "238dad0df11c57f413b8d42dc8e0983eddc7876d6a4cfe858e4027f126bc17e6",
+        "skills/tropism-in-the-loop/SKILL.md": "37d322156f05399400f54cebc7e5cc8e6f6e31d64cfb7d70edbe4ecb581c117b"
+      },
+      "tools": [
+        {
+          "mcp": {
+            "args": [
+              "mcp"
+            ],
+            "server": "forge"
+          },
+          "ref": "v2026.9.7",
+          "repo": "forge",
+          "skills": "integrations/claude-plugin/forge-architect/skills"
+        },
+        {
+          "ref": "v2026.9.2",
+          "repo": "tropism",
+          "skills": "skills"
+        }
+      ]
+    },
+    "docs-and-diagrams": {
+      "files": {
+        "skills/asciidoc-author/SKILL.md": "c547bc2e39c533dbb2301aa7a0eb6778f0e8f7c3321073d3538a492934ec4623"
+      },
+      "tools": [
+        {
+          "ref": "2026.9.9",
+          "repo": "adoc",
+          "skill": "docs/genai/claude-skill"
+        }
+      ]
+    }
+  }
+}

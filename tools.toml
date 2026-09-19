@@ -1,0 +1,50 @@
+# Tools exposed to agents through this marketplace, grouped into plugins.
+#
+# Each tool's own repository is the source of truth for its skills. `make sync-tools`
+# copies them into plugins/<plugin>/skills/ at the pinned release `ref`, generates the
+# plugin's .mcp.json (launched through bx at that same ref, so skills and binary agree),
+# and records every synced file in tools.lock.json. `make lint` fails when this manifest
+# and the lock disagree, or when a synced file has been edited here.
+#
+# Grouping rules (see README.md "How tools are grouped"):
+#   one plugin per job myspec switches on or off per lifecycle mode; tools relevant only
+#   to some repos get their own plugin; tools sharing an artefact share a plugin.
+#
+#   repo   — grahambrooks/<repo>
+#   ref    — release tag; must have binaries bx can resolve if `mcp` is set
+#   skills — directory whose subdirectories each hold a SKILL.md
+#   skill  — a single skill directory (named after its frontmatter `name`)
+#   mcp    — server name and the args passed to the binary
+
+[[plugin]]
+name = "architecture"
+
+  [[plugin.tool]]
+  repo = "forge"
+  ref = "v2026.9.7"
+  skills = "integrations/claude-plugin/forge-architect/skills"
+  mcp = { server = "forge", args = ["mcp"] }
+
+  # No MCP yet: the release tarball nests the binary in a subdirectory bx does not
+  # search, and tropism-mcp is not shipped. The skills drive the `tropism` CLI.
+  [[plugin.tool]]
+  repo = "tropism"
+  ref = "v2026.9.2"
+  skills = "skills"
+
+[[plugin]]
+name = "api-contracts"
+
+  [[plugin.tool]]
+  repo = "brake"
+  ref = "v2026.9.2"
+  skills = ".claude/skills"
+  mcp = { server = "brake", args = ["mcp"] }
+
+[[plugin]]
+name = "docs-and-diagrams"
+
+  [[plugin.tool]]
+  repo = "adoc"
+  ref = "2026.9.9"
+  skill = "docs/genai/claude-skill"

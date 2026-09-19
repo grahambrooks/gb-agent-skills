@@ -10,7 +10,7 @@
       "name": "code-intelligence",
       "source": "./plugins/code-intelligence",
       "description": "Semantic code intelligence via the symgraph MCP server, launched on-demand by bx.",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": {
         "name": "Graham Brooks"
       },
@@ -44,6 +44,68 @@
         "mcp",
         "spec-driven-development",
         "events"
+      ]
+    },
+    {
+      "name": "architecture",
+      "source": "./plugins/architecture",
+      "description": "Design and enforce architecture: the forge modelling MCP server and skills, plus tropism's dependency-rule skills.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Graham Brooks"
+      },
+      "homepage": "https://github.com/grahambrooks/gb-agent-skills",
+      "repository": "https://github.com/grahambrooks/gb-agent-skills",
+      "license": "MIT",
+      "category": "developer-tools",
+      "keywords": [
+        "architecture",
+        "forge",
+        "tropism",
+        "c4",
+        "dependency-rules",
+        "mcp"
+      ]
+    },
+    {
+      "name": "api-contracts",
+      "source": "./plugins/api-contracts",
+      "description": "Catch breaking API changes while drafting them: the brake MCP server and skills for OpenAPI, protobuf and GraphQL.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Graham Brooks"
+      },
+      "homepage": "https://github.com/grahambrooks/gb-agent-skills",
+      "repository": "https://github.com/grahambrooks/gb-agent-skills",
+      "license": "MIT",
+      "category": "developer-tools",
+      "keywords": [
+        "api",
+        "brake",
+        "openapi",
+        "protobuf",
+        "graphql",
+        "breaking-changes",
+        "mcp"
+      ]
+    },
+    {
+      "name": "docs-and-diagrams",
+      "source": "./plugins/docs-and-diagrams",
+      "description": "Author documentation that renders with Graham's text-to-document tools, starting with the adoc AsciiDoc processor.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Graham Brooks"
+      },
+      "homepage": "https://github.com/grahambrooks/gb-agent-skills",
+      "repository": "https://github.com/grahambrooks/gb-agent-skills",
+      "license": "MIT",
+      "category": "developer-tools",
+      "keywords": [
+        "documentation",
+        "asciidoc",
+        "adoc",
+        "diagrams"
       ]
     }
   ]

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "brake": {
+      "type": "stdio",
+      "command": "bx",
+      "args": [
+        "grahambrooks/brake@v2026.9.2",
+        "--",
+        "mcp"
+      ]
+    }
+  }
+}

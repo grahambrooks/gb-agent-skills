@@ -133,3 +133,37 @@ class PluginsDocUpToDateRule(Rule):
             )
 
         return violations
+
+
+class ToolSkillsUpToDateRule(Rule):
+    """Check that skills synced from tool repositories match tools.toml and tools.lock.json"""
+
+    @property
+    def rule_id(self) -> str:
+        return "tool-skills-up-to-date"
+
+    @property
+    def description(self) -> str:
+        return "Skills synced from tool repositories must match tools.toml and tools.lock.json. Run 'make sync-tools' to resync."
+
+    def default_severity(self) -> Severity:
+        return Severity.ERROR
+
+    def check(self, context: RepositoryContext) -> List[RuleViolation]:
+        manifest = context.root_path / "tools.toml"
+        script = context.root_path / "scripts" / "sync_tool_skills.py"
+        if not manifest.exists() or not script.exists():
+            return []
+
+        # --check is offline: it compares plugins/ against the lock, never the tool repositories.
+        result = subprocess.run(
+            ["python3", str(script), "--check"],
+            cwd=str(context.root_path),
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        if result.returncode == 0:
+            return []
+        problems = result.stderr.strip().splitlines() or [f"sync_tool_skills.py --check failed ({result.returncode})"]
+        return [self.violation(p, file_path=manifest) for p in problems]

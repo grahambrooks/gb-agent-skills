@@ -5,7 +5,7 @@
     {
       "name": "code-intelligence",
       "description": "Semantic code intelligence via the symgraph MCP server, launched on-demand by bx.",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "commands": [],
       "skills": [
         {
@@ -35,6 +35,97 @@
       "agents": [],
       "has_readme": true,
       "has_mcp": true
+    },
+    {
+      "name": "architecture",
+      "description": "Design and enforce architecture: the forge modelling MCP server and skills, plus tropism's dependency-rule skills.",
+      "version": "0.1.0",
+      "commands": [],
+      "skills": [
+        {
+          "name": "architecture-review",
+          "id": "architecture-review",
+          "description": "Review an existing Forge model \u2014 answer architecture questions, check for smells, and summarise a system's structure. Use this when the user asks to \"review the architecture\", \"audit the model\", \"explain how service X fits in\", \"find coupling issues\", \"check for data-classification violations\", or drills into a specific container/component in a `.forge` file. Requires a model already loaded (see model-repository to create one)."
+        },
+        {
+          "name": "authoring-architecture-rules",
+          "id": "authoring-architecture-rules",
+          "description": "Write or repair a tropism.toml ruleset that encodes a repository's intended architecture \u2014 module boundaries, layering, and package policy \u2014 derived from what the code actually contains rather than from a template. Use this whenever someone wants to enforce architectural boundaries, stop layers reaching past each other, ban or scope a dependency, prevent modules becoming entangled, add tropism to a project, or fix a ruleset that errors or reports rules as stale. Also use it when someone describes an architecture rule in prose (\"the API shouldn't touch the database directly\", \"keep the UI framework out of the domain\", \"these two services must stay independent\") and wants it enforced, even if they never mention tropism or tropism.toml by name."
+        },
+        {
+          "name": "forge-dsl",
+          "id": "forge-dsl",
+          "description": "Author or edit Forge `.forge` DSL files \u2014 the source of truth for a Forge architecture model. Use when the user asks to \"write a .forge file\", \"add a container to the model\", \"fix a syntax error\", \"rename an element\", or any direct editing of `.forge` / `.forge-rules` content. Pairs with model-repository (to generate) and architecture-review (to query)."
+        },
+        {
+          "name": "model-repository",
+          "id": "model-repository",
+          "description": "Produce a Forge architecture model (C4 + process + deployment) from a repository. Use this when the user asks to \"model this repo\", \"diagram the architecture\", \"generate a C4 model\", \"create a forge model\", \"analyze this codebase architecturally\", \"produce an architecture doc site\", or any variant of inferring architecture from source. Invokes `forge analyze` and the Forge MCP server."
+        },
+        {
+          "name": "reporting-tropism-issues",
+          "id": "reporting-tropism-issues",
+          "description": "Turn an experience of using tropism \u2014 a false positive, a check that would not run, a missing language or ecosystem, a wish for a feature \u2014 into a bug report or feature request that can actually be acted on, after first checking whether the behaviour is a known structural limit rather than a defect. Use this whenever someone is frustrated by a tropism finding, thinks tropism got something wrong, wants tropism to support something it does not, says a check reported \"unavailable\" and they do not know why, or asks how to report a problem or request a feature. Also use it before filing any issue against tropism, so a known limitation is not re-reported as a bug."
+        },
+        {
+          "name": "tropism-in-the-loop",
+          "id": "tropism-in-the-loop",
+          "description": "Use tropism to check architectural boundaries while writing code \u2014 before adding an import, after a refactor, or before finishing a task \u2014 and interpret its findings correctly, including which checks are trustworthy enough to act on and which are advisory. Use this whenever working in a repository that has a tropism.toml, whenever about to add a dependency or an import that crosses a module boundary, whenever a tropism check or pre-commit hook fails and the finding needs acting on, and whenever a refactor moves files between modules. Also use it when asked to keep a change within the architecture, to check whether something is allowed to import something else, or when a build fails with a module-rule or package-rule finding."
+        }
+      ],
+      "hooks": [],
+      "agents": [],
+      "has_readme": true,
+      "has_mcp": true
+    },
+    {
+      "name": "api-contracts",
+      "description": "Catch breaking API changes while drafting them: the brake MCP server and skills for OpenAPI, protobuf and GraphQL.",
+      "version": "0.1.0",
+      "commands": [],
+      "skills": [
+        {
+          "name": "api-compatibility",
+          "id": "api-compatibility",
+          "description": "Check whether a change to an API contract would break its consumers, using brake, before the change is written. Use when editing, generating or reviewing an OpenAPI/Swagger document, a .proto file, a GraphQL SDL schema, or an AsyncAPI document \u2014 removing or renaming a field, changing a type, adding a required parameter, changing a status code, tightening security \u2014 or when asked \"is this change backward compatible?\", \"will this break clients?\", or \"can I remove this field?\"."
+        },
+        {
+          "name": "brake-adopt",
+          "id": "brake-adopt",
+          "description": "Set up brake in a repository so breaking API changes are caught at commit time and in CI \u2014 run brake init, write brake.toml, choose baselines and a compatibility level, install the pre-commit hook, and add the CI jobs. Use when asked to add API compatibility checking, prevent breaking changes to an API, gate an OpenAPI/protobuf/GraphQL contract, set up brake, or stop clients being broken by a spec change."
+        },
+        {
+          "name": "brake-consumer-impact",
+          "id": "brake-consumer-impact",
+          "description": "Find out which declared consumers use an API endpoint or field before removing, renaming or narrowing it, using brake's consumer demand inventory (pact files, GraphQL operation documents, brake-uses manifests). Use when asked \"who uses this endpoint?\", \"is anyone reading this field?\", \"can we drop this response field?\", \"what breaks if I remove this?\", or before deleting anything from an OpenAPI, protobuf or GraphQL contract."
+        },
+        {
+          "name": "brake-triage",
+          "id": "brake-triage",
+          "description": "Diagnose and resolve a brake finding that is blocking a commit, a pre-commit hook or a CI job \u2014 an error like response-field-removed, endpoint-removed, param-added-required, field-number-changed, consumer-field-unmet, contract-unreachable, stale-allow or generated-drift. Use when a brake run failed, when the pre-commit hook rejected a change to an API contract, or when asked to fix, understand or suppress a brake error."
+        }
+      ],
+      "hooks": [],
+      "agents": [],
+      "has_readme": true,
+      "has_mcp": true
+    },
+    {
+      "name": "docs-and-diagrams",
+      "description": "Author documentation that renders with Graham's text-to-document tools, starting with the adoc AsciiDoc processor.",
+      "version": "0.1.0",
+      "commands": [],
+      "skills": [
+        {
+          "name": "asciidoc-author",
+          "id": "asciidoc-author",
+          "description": "Use this skill when authoring or editing AsciiDoc documents in projects that use the `adoc` Rust CLI to render them. Covers the working subset of AsciiDoc that `adoc` supports, common pitfalls, the lint-loop workflow, and the AST/chunks/schema entry points for tooling integrations. Invoke whenever the user's task involves writing `.adoc` files, validating AsciiDoc, generating chunks for retrieval, or producing AST-shaped output for downstream tools."
+        }
+      ],
+      "hooks": [],
+      "agents": [],
+      "has_readme": true,
+      "has_mcp": false
     }
   ]
 }
