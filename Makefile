@@ -71,3 +71,8 @@ new-plugin: ## Create a new plugin (usage: make new-plugin NAME=my-plugin)
 	@echo "✓ Added to marketplace.json"
 
 .DEFAULT_GOAL := help
+
+.PHONY: watch-ci
+watch-ci: ## After pushing, wait for every CI run on HEAD; fails if any run fails
+	@command -v watch-ci >/dev/null || { echo "watch-ci not on PATH: ln -s ~/dev/projects/agentic-twin/scripts/watch-ci.sh ~/.local/bin/watch-ci" >&2; exit 1; }
+	watch-ci
