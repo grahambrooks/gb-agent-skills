@@ -8,6 +8,14 @@
         "--",
         "mcp"
       ]
+    },
+    "tropism": {
+      "type": "stdio",
+      "command": "bx",
+      "args": [
+        "grahambrooks/tropism@v2026.11.2#tropism-mcp",
+        "--"
+      ]
     }
   }
 }

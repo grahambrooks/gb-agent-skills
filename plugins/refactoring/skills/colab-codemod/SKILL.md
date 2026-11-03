@@ -2,7 +2,7 @@
 name: colab-codemod
 description: Make a mechanical, repo-wide code change with colab instead of editing files one at a time or reaching for sed. Use when the same structural edit repeats across many files — an import path, a dependency rename, a symbol, a Java package, a Go struct tag, a call site, or a TOML/JSON/Markdown config key. Covers deciding whether colab fits, writing the .codemod script, checking blast radius before applying, and applying safely, via the CLI or the MCP tools.
 ---
-<!-- Synced from grahambrooks/colab@v2026.11.2 (.claude/skills/colab-codemod) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/colab@v2026.11.2 (plugins/claude/colab/skills/colab-codemod) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # Running a codemod with colab
 

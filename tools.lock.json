@@ -26,21 +26,21 @@
     },
     "architecture": {
       "files": {
-        ".mcp.json": "1feb4887311998cf1af1de93430cc59f476b1814ac13509b4b45722746c3195b",
-        "hooks/check-bx.sh": "373fd7adeff6e39fd23dcd30cc54987a251dd31787f8ba6125c1bf7fba485b02",
+        ".mcp.json": "96e404e54b180b11e0372cf8cd8bbc393c2e4ec0124d4dad628e88700bc97cfe",
+        "hooks/check-bx.sh": "6c454a7d4f1237d88994bacbf31a539f381f05df00e8bada1aa36596a9212736",
         "hooks/hooks.json": "72fda9b25eacea987f9fc92f661fb150e6736e77b02c0079d291c0eaef85563c",
         "skills/architecture-review/SKILL.md": "6b0f16f13afb753131bf1044a55607739e51c4d9f8569699626c194a7e20d7c6",
         "skills/architecture-review/references/check-rules.md": "9d69f852f6a946af1f80c712b3cb09609765ec9644b8b8edc6d1229b113fd6bb",
-        "skills/authoring-architecture-rules/SKILL.md": "1047e17d6d276b358c522c97513e2509def13baf0db2a9d04df8fa0f60b3396c",
+        "skills/authoring-architecture-rules/SKILL.md": "fe5d5cee863f9bd9f813d5c5ba33d42dfe5d53ac0b95f1bb1cdd0f6bf65dbd06",
         "skills/authoring-architecture-rules/references/rule-reference.md": "3f61a709684fc2ca1beeba841d192189ac893c517b3d1e11f200ddd746c101b3",
         "skills/forge-dsl/SKILL.md": "cd222f8ceb53ef344b00404896e35f64ad962a3e59bc880b46dfbc4848b93353",
         "skills/forge-dsl/references/examples.md": "12cad510c4ee7205899585bc5ec7fc3dd85e5f44139121b868a29c06483bf723",
         "skills/forge-dsl/references/grammar.md": "5ed5c84e7233f049454bc4f4c1e51bafbd8512f901ef48c597290a6aebbd705e",
         "skills/model-repository/SKILL.md": "32f01a2121f05d7def401c7638a4c8b0c9c14ad67b99f974adc9d9ffd9a425c5",
         "skills/model-repository/references/analyze-options.md": "a16a2fdd8afbf71f36b96f88a3794b31d33e151631d01f9c1c53351161262f6b",
-        "skills/reporting-tropism-issues/SKILL.md": "f4d2c5cd777a21778428b520fcb5a22d6f2d42428a25df9c310ebf7f6b360e50",
+        "skills/reporting-tropism-issues/SKILL.md": "d8702abfec477d41cbb88a9254c539c545abd728ff6d0ef3f9f3401a507b8529",
         "skills/reporting-tropism-issues/references/known-limitations.md": "238dad0df11c57f413b8d42dc8e0983eddc7876d6a4cfe858e4027f126bc17e6",
-        "skills/tropism-in-the-loop/SKILL.md": "f0a863e089c84d5be10c4e614bb4f1f4a8405e9c98edb7a4a1aa7982935b4202"
+        "skills/tropism-in-the-loop/SKILL.md": "a33972ba20cd08cc063c8f09e70fc43aab6746e38c09d9a883d8f63d3a2fc6e5"
       },
       "tools": [
         {
@@ -55,7 +55,11 @@
           "skills": "integrations/claude-plugin/forge-architect/skills"
         },
         {
-          "ref": "v2026.9.3",
+          "mcp": {
+            "bin": "tropism-mcp",
+            "server": "tropism"
+          },
+          "ref": "v2026.11.2",
           "repo": "tropism",
           "skills": "skills"
         }
@@ -96,7 +100,7 @@
         ".mcp.json": "170338b74662a6a7d52f92a77e9fea4b65505955f116a20fab19ba2e3c4d2f44",
         "hooks/check-bx.sh": "0c0eb029836c4690ca5c1d3be9e17ca8d414ac17f5c18c9d26451bf700532612",
         "hooks/hooks.json": "72fda9b25eacea987f9fc92f661fb150e6736e77b02c0079d291c0eaef85563c",
-        "skills/colab-codemod/SKILL.md": "3dbdbfd4ce21afa17b27848f8f396b792fb7990bbcb14c9982636cd7d95ac082",
+        "skills/colab-codemod/SKILL.md": "0585ae9f42453dfe75de47e78d93833bdec4468aef4af4701f7f0e6c09983849",
         "skills/colab-codemod/references/recipes.md": "0c0aea16df46f911bc55998f38b830b2559f4ccf9508a189ca11e703a034160a",
         "skills/colab-codemod/references/troubleshooting.md": "dc6d7c8045d671219a21ab4a0735d8bf9e5c02cd9d0d98f83113833aff6bf5f1",
         "skills/refactor-dsl/SKILL.md": "e5181afdf36814c6a69b0e3c304670c5f7f04d0d829edfcc189849101606afaf"
@@ -111,7 +115,7 @@
           },
           "ref": "v2026.11.2",
           "repo": "colab",
-          "skill": ".claude/skills/colab-codemod"
+          "skill": "plugins/claude/colab/skills/colab-codemod"
         },
         {
           "ref": "v2026.11.2",

@@ -41,12 +41,14 @@ name = "architecture"
   skills = "integrations/claude-plugin/forge-architect/skills"
   mcp = { server = "forge", args = ["mcp"] }
 
-  # No MCP yet: tropism-mcp ships in the release but is a stub ("not implemented
-  # yet", build-order step 6). The skills drive the `tropism` CLI.
+  # tropism-mcp needs v2026.11.2 or later: earlier releases shipped it as a stub.
+  # It takes no args; the scan root defaults to the working directory. The skills
+  # still drive the `tropism` CLI, which the MCP tools mirror (tropism#51).
   [[plugin.tool]]
   repo = "tropism"
-  ref = "v2026.9.3"
+  ref = "v2026.11.2"
   skills = "skills"
+  mcp = { server = "tropism", bin = "tropism-mcp" }
 
 [[plugin]]
 name = "api-contracts"
@@ -75,7 +77,7 @@ name = "refactoring"
   [[plugin.tool]]
   repo = "colab"
   ref = "v2026.11.2"
-  skill = ".claude/skills/colab-codemod"
+  skill = "plugins/claude/colab/skills/colab-codemod"
   mcp = { server = "colab", args = ["mcp"] }
 
   # Skill only: refactor-dsl ships no MCP server. The skill drives the `refactor`

@@ -3,7 +3,7 @@
 # This plugin's MCP servers are launched by bx; say so once at session start if it is missing.
 if ! command -v bx >/dev/null 2>&1; then
   cat <<'EOF' >&2
-[architecture] `bx` not found on PATH; its MCP servers (forge) will not start.
+[architecture] `bx` not found on PATH; its MCP servers (forge, tropism) will not start.
 Install bx:  brew install grahambrooks/bx/bx   (or: cargo install --git https://github.com/grahambrooks/bx)
 EOF
 fi
