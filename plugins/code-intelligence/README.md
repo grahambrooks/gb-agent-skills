@@ -8,7 +8,7 @@ Semantic code intelligence for Claude Code, powered by [symgraph](https://github
 - **Skill `explore-code`** — teaches Claude when to reach for which symgraph tool, with a tool-selection cheat sheet and a strategy section.
 - **SessionStart hook** — verifies `bx` is installed, and kicks off a background first-time index if the project has never been indexed.
 
-No manual install of `symgraph` is required: `bx` fetches and execs the right release for your platform.
+No manual install of `symgraph` is required: `bx` fetches and execs the right release for your platform. The release is pinned in `tools.toml`, like every other tool in this marketplace.
 
 ## Prerequisites
 
@@ -47,7 +47,7 @@ Or just ask Claude code-structure questions naturally — the skill description 
 ```
 Claude Code
     │
-    ├── .mcp.json ──► bx grahambrooks/symgraph serve  (stdio MCP)
+    ├── .mcp.json ──► bx grahambrooks/symgraph@<tag> -- serve  (stdio MCP)
     │                       │
     │                       └── reads .symgraph/index.db
     │
@@ -71,4 +71,4 @@ Claude Code
 | `bx: command not found` | Install `bx` (see Prerequisites). |
 | `symgraph-status` reports 0 nodes | First-time index hasn't finished — check `index.log` beside the index (`symgraph where`). |
 | Stale results after edits | Run the `symgraph-reindex` MCP tool, or `bx grahambrooks/symgraph index` for a full rebuild. |
-| Want a specific symgraph version | Edit `.mcp.json` and pin: `"args": ["grahambrooks/symgraph@v2026.4.13", "serve"]`. |
+| Want a different symgraph version | The release is pinned in the marketplace's `tools.toml` (`ref` of the symgraph entry). Change it there and run `make update`; the SessionStart index uses the same pin. |

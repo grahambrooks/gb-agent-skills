@@ -12,7 +12,9 @@ environment) and `lsp` (a
 language server, same launch fields plus `extensions`, mapping file extensions
 to language ids for .lsp.json) are each optional. A top-level `requires_github_token = true` (private marketplaces)
 makes the generated SessionStart hook also warn when bx has no GITHUB_TOKEN to
-fetch private releases with.
+fetch private releases with. A plugin-level `bx_hook = false` skips the generated
+hooks/hooks.json and hooks/check-bx.sh, for a plugin that authors its own
+SessionStart hook (which then has to check for bx itself).
 
 Sources are read from a local checkout (~/dev/projects/<repo>, or $TOOLS_SRC/<repo>) when it
 has the pinned ref, otherwise from a shallow clone of github.com/grahambrooks/<repo>.
@@ -91,6 +93,11 @@ def load_manifest() -> list:
 def tool_key(t: dict) -> dict:
     """The manifest fields a lock entry must agree with."""
     return {k: t[k] for k in ("repo", "ref", "skills", "skill", "commands", "mcp", "lsp") if k in t}
+
+
+def plugin_key(p: dict) -> dict:
+    """Plugin-level manifest fields a lock entry must agree with (only when set)."""
+    return {"bx_hook": False} if p.get("bx_hook", True) is False else {}
 
 
 def bx_args(t: dict, launch: dict) -> list:
@@ -213,7 +220,7 @@ def sync() -> None:
                 for t in tools if "lsp" in t
             }
             files[".lsp.json"] = (json.dumps(lsp, indent=2) + "\n").encode()
-        if servers or lsp_servers:
+        if (servers or lsp_servers) and plugin.get("bx_hook", True):
             files["hooks/hooks.json"] = (json.dumps(HOOKS_JSON, indent=2) + "\n").encode()
             listed = ", ".join(servers + lsp_servers)
             token_check = TOKEN_CHECK.format(plugin=name, servers=listed) if settings.get("requires_github_token") else ""
@@ -233,6 +240,7 @@ def sync() -> None:
         lock["plugins"][name] = {
             "tools": [tool_key(t) for t in tools],
             "files": {rel: sha256(data) for rel, data in sorted(files.items())},
+            **plugin_key(plugin),
         }
         print(f"synced {name}: {len(files)} files from {', '.join(t['repo'] + '@' + t['ref'] for t in tools)}")
 
@@ -257,7 +265,9 @@ def check() -> list:
     if not LOCK.exists():
         return ["tools.lock.json is missing. Run 'make sync-tools'."]
     locked = json.loads(LOCK.read_text()).get("plugins", {})
-    manifest = {p["name"]: [tool_key(t) for t in p.get("tool", [])] for p in load_manifest()}
+    plugins = load_manifest()
+    manifest = {p["name"]: [tool_key(t) for t in p.get("tool", [])] for p in plugins}
+    plugin_keys = {p["name"]: plugin_key(p) for p in plugins}
 
     for name in sorted(set(manifest) | set(locked)):
         if name not in locked:
@@ -266,7 +276,8 @@ def check() -> list:
         if name not in manifest:
             problems.append(f"plugin {name} is in tools.lock.json but not tools.toml. Run 'make sync-tools'.")
             continue
-        if manifest[name] != locked[name]["tools"]:
+        if (manifest[name] != locked[name]["tools"]
+                or plugin_keys[name] != {k: v for k, v in locked[name].items() if k not in ("tools", "files")}):
             problems.append(f"plugin {name}: tools.toml changed since the last sync. Run 'make sync-tools'.")
         pdir = ROOT / "plugins" / name
         for rel, digest in locked[name]["files"].items():

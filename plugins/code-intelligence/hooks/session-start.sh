@@ -42,6 +42,12 @@ is_indexed() {
   [ -f "${git_common}/symgraph/index.db" ]
 }
 
+# Index with the same symgraph release the MCP server runs: tools.toml pins it
+# and sync_tool_skills.py writes it into .mcp.json. Fall back to the latest
+# release only if .mcp.json is unreadable.
+symgraph_spec=$(grep -o '"grahambrooks/symgraph@[^"]*"' "${CLAUDE_PLUGIN_ROOT:-$(dirname "$0")/..}/.mcp.json" 2>/dev/null | head -n1 | tr -d '"')
+symgraph_spec="${symgraph_spec:-grahambrooks/symgraph}"
+
 if ! is_indexed; then
   # `symgraph index` writes its own progress log (index.log) beside the index —
   # in the git dir / cache, never the working tree. Capture the launcher's
@@ -51,7 +57,7 @@ if ! is_indexed; then
   echo "[code-intelligence] no index found — indexing in background (launcher log: ${log_file}; progress: <index-dir>/index.log)" >&2
   (
     cd "${project_dir}" || exit 0
-    bx grahambrooks/symgraph index >"${log_file}" 2>&1
+    bx "${symgraph_spec}" -- index >"${log_file}" 2>&1
   ) &
   disown "$!" 2>/dev/null || true
 fi

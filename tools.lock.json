@@ -61,6 +61,24 @@
         }
       ]
     },
+    "code-intelligence": {
+      "bx_hook": false,
+      "files": {
+        ".mcp.json": "a8227822f3d1da9aeff67bebdf6b4f5ffc981a720f36cb73cac5baa81527b4d3"
+      },
+      "tools": [
+        {
+          "mcp": {
+            "args": [
+              "serve"
+            ],
+            "server": "symgraph"
+          },
+          "ref": "v2026.11.1",
+          "repo": "symgraph"
+        }
+      ]
+    },
     "docs-and-diagrams": {
       "files": {
         "skills/asciidoc-author/SKILL.md": "8986e37ac073b28727a3f7118ee588ff43ed3899e910520d13ca019d6e96a930"

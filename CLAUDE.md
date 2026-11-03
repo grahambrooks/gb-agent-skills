@@ -66,7 +66,8 @@ the regenerated files alongside plugin changes.
 `tools.toml` declares which of Graham's tools each plugin wraps, pinned to a release tag.
 `scripts/sync_tool_skills.py` (`make sync-tools`, also run by `make update`) copies each tool repository's skills
 into `plugins/<plugin>/skills/`, generates the plugin's `.mcp.json` (`bx grahambrooks/<repo>@<tag> -- <args>`) and
-bx-check hook, and records file hashes in `tools.lock.json`. Never hand-edit those files: the `tool-skills-up-to-date`
+bx-check hook (skipped with plugin-level `bx_hook = false`, as `code-intelligence` does because it authors its own
+SessionStart hook), and records file hashes in `tools.lock.json`. Never hand-edit those files: the `tool-skills-up-to-date`
 rule runs `sync_tool_skills.py --check` offline and fails on any drift. Custom rules only load because
 `.claudelint.yaml` lists them; that file must spell out every default rule, since a config file replaces the defaults.
 

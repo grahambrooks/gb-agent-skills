@@ -15,6 +15,22 @@
 #   skills — directory whose subdirectories each hold a SKILL.md
 #   skill  — a single skill directory (named after its frontmatter `name`)
 #   mcp    — server name and the args passed to the binary
+#
+# Plugin-level: `bx_hook = false` skips the generated bx-check SessionStart hook,
+# for a plugin that ships its own (see sync_tool_skills.py).
+
+[[plugin]]
+name = "code-intelligence"
+# The explore-code skill and the SessionStart hook (bx check + background first
+# index) are authored here, not synced, so the generated bx hook is skipped.
+# hooks/session-start.sh reads the pinned symgraph spec from the generated
+# .mcp.json, so the index it builds comes from the same release as the server.
+bx_hook = false
+
+  [[plugin.tool]]
+  repo = "symgraph"
+  ref = "v2026.11.1"
+  mcp = { server = "symgraph", args = ["serve"] }
 
 [[plugin]]
 name = "architecture"

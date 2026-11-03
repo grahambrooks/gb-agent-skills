@@ -3,7 +3,11 @@
     "symgraph": {
       "type": "stdio",
       "command": "bx",
-      "args": ["grahambrooks/symgraph", "serve"]
+      "args": [
+        "grahambrooks/symgraph@v2026.11.1",
+        "--",
+        "serve"
+      ]
     }
   }
 }
