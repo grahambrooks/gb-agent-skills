@@ -68,10 +68,13 @@ name = "docs-and-diagrams"
 [[plugin]]
 name = "refactoring"
 
-  # The skill drives the colab CLI. colab's MCP server is left out until it speaks
-  # MCP's newline-delimited stdio framing; it currently uses LSP-style
-  # Content-Length headers, which Claude Code cannot read. colab-extend (in the
-  # same directory) is for developing colab itself, so only colab-codemod is synced.
+  # The skill drives the colab CLI. colab's MCP server is left out until a release
+  # speaks MCP's newline-delimited stdio framing: v2026.11.1 and earlier use
+  # LSP-style Content-Length headers, which Claude Code cannot read. The fix is on
+  # colab main (ee0aad4, colab#46); at the next colab release, bump `ref` and add
+  # mcp = { server = "colab", args = ["mcp"] }
+  # colab-extend (in the same directory) is for developing colab itself, so only
+  # colab-codemod is synced.
   [[plugin.tool]]
   repo = "colab"
   ref = "v2026.9.2"
