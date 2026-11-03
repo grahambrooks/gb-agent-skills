@@ -93,15 +93,30 @@
     },
     "refactoring": {
       "files": {
-        "skills/colab-codemod/SKILL.md": "68d8444e26d480661121ccad0ec164f1c53126abaf4aae4763003e914e9b11a7",
-        "skills/colab-codemod/references/recipes.md": "d3566a8787283fe3bef15d96f6c28c2a906115a993031f19ea824c3de9bc2c48",
-        "skills/colab-codemod/references/troubleshooting.md": "a88004766039100112eaccb120ac4e33092323c4d48a511a695a6fa0dc6f43a2"
+        ".mcp.json": "170338b74662a6a7d52f92a77e9fea4b65505955f116a20fab19ba2e3c4d2f44",
+        "hooks/check-bx.sh": "0c0eb029836c4690ca5c1d3be9e17ca8d414ac17f5c18c9d26451bf700532612",
+        "hooks/hooks.json": "72fda9b25eacea987f9fc92f661fb150e6736e77b02c0079d291c0eaef85563c",
+        "skills/colab-codemod/SKILL.md": "3dbdbfd4ce21afa17b27848f8f396b792fb7990bbcb14c9982636cd7d95ac082",
+        "skills/colab-codemod/references/recipes.md": "0c0aea16df46f911bc55998f38b830b2559f4ccf9508a189ca11e703a034160a",
+        "skills/colab-codemod/references/troubleshooting.md": "dc6d7c8045d671219a21ab4a0735d8bf9e5c02cd9d0d98f83113833aff6bf5f1",
+        "skills/refactor-dsl/SKILL.md": "e5181afdf36814c6a69b0e3c304670c5f7f04d0d829edfcc189849101606afaf"
       },
       "tools": [
         {
-          "ref": "v2026.9.2",
+          "mcp": {
+            "args": [
+              "mcp"
+            ],
+            "server": "colab"
+          },
+          "ref": "v2026.11.2",
           "repo": "colab",
           "skill": ".claude/skills/colab-codemod"
+        },
+        {
+          "ref": "v2026.11.2",
+          "repo": "refactor-dsl",
+          "skill": "skills/refactor-dsl"
         }
       ]
     }

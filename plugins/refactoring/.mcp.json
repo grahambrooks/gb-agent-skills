@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "colab": {
+      "type": "stdio",
+      "command": "bx",
+      "args": [
+        "grahambrooks/colab@v2026.11.2",
+        "--",
+        "mcp"
+      ]
+    }
+  }
+}

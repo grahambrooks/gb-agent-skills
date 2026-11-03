@@ -125,13 +125,18 @@
         {
           "name": "colab-codemod",
           "id": "colab-codemod",
-          "description": "Run a mechanical, repo-wide code change with colab instead of editing files one at a time. Use when a rename or sweep touches many files and the change is structural \u2014 an import path, a dependency name, a symbol, a Java package, a Go struct tag, a call site. Covers writing the .codemod script, checking blast radius, and applying safely, via the CLI or the MCP tools."
+          "description": "Make a mechanical, repo-wide code change with colab instead of editing files one at a time or reaching for sed. Use when the same structural edit repeats across many files \u2014 an import path, a dependency rename, a symbol, a Java package, a Go struct tag, a call site, or a TOML/JSON/Markdown config key. Covers deciding whether colab fits, writing the .codemod script, checking blast radius before applying, and applying safely, via the CLI or the MCP tools."
+        },
+        {
+          "name": "refactor-dsl",
+          "id": "refactor-dsl",
+          "description": "Use the refactor-dsl `refactor` CLI to search code by tree-sitter query or make a regex find-and-replace across many files, previewing a diff first. Use when you need to list every function, call or other syntax node matching a tree-sitter pattern in Rust, TypeScript/JavaScript, Python, Go, Java, C# or Ruby; when a repo-wide edit is a textual pattern (a regex with capture groups) scoped by extension or glob; or when deciding between refactor-dsl and colab for a mechanical change. Not for symbol-aware renames; `refactor rename` is a plain substring replace."
         }
       ],
       "hooks": [],
       "agents": [],
       "has_readme": true,
-      "has_mcp": false
+      "has_mcp": true
     }
   ]
 }
