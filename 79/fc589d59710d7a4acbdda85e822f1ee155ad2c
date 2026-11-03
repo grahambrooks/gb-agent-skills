@@ -1,0 +1,37 @@
+tools.toml
+  s_3af201839d09d6::t_5309f13f97138f 71-72,77,79-86
+docs/data.json
+  s_3af201839d09d6::t_716506b788ac9d 128-133,139
+plugins/refactoring/.mcp.json
+  s_3af201839d09d6::t_94977f7e7da37a 1-13
+plugins/refactoring/hooks/check-bx.sh
+  s_3af201839d09d6::t_61ec328a601b88 1-10
+plugins/refactoring/hooks/hooks.json
+  s_3af201839d09d6::t_7cf37a7c0184bc 1-14
+plugins/refactoring/skills/colab-codemod/SKILL.md
+  s_3af201839d09d6::t_74a9d178ff6250 3,5,9-39,47,49-51,53-57,66,69-71,81,84,87,91-92,94-102,105-109,121-127,129,132,136-168,177,185-186,188,191,197,201,211,213-215,220,225,230-231,241-245,260-266,268-269,275,285-286,292-295
+plugins/refactoring/skills/colab-codemod/references/recipes.md
+  s_3af201839d09d6::t_5db8d9795e0eed 9-12,26,29-31,34-35,40-48,62-65,70,74-79,106-108,118-120,132,217-218,233,309,323-325,343-345,373-377,389-469
+plugins/refactoring/skills/colab-codemod/references/troubleshooting.md
+  s_3af201839d09d6::t_1a629cb227ac4a 3-4,8-9,21-22,31-39,50-59,67-69,91-94,101,111-113,116-118,129,134-135,156-159,169-171,203-204,210-214
+plugins/refactoring/skills/refactor-dsl/SKILL.md
+  s_3af201839d09d6::t_780e019a3bbe02 1-135
+tools.lock.json
+  s_3af201839d09d6::t_32173c7623b79e 96-102,106-112,115-119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "79fc589d59710d7a4acbdda85e822f1ee155ad2c",
+  "prompts": {},
+  "sessions": {
+    "s_3af201839d09d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ca62a504-f3e7-484c-9e2d-47cfc6cd0491",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Graham Brooks <graham@grahambrooks.com>"
+    }
+  }
+}
