@@ -4,7 +4,7 @@
       "type": "stdio",
       "command": "bx",
       "args": [
-        "grahambrooks/symgraph@v2026.11.1",
+        "grahambrooks/symgraph@v2026.11.23",
         "--",
         "serve"
       ]

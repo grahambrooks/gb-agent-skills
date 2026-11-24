@@ -52,6 +52,11 @@
           "description": "Produce a Forge architecture model (C4 + process + deployment) from a repository. Use this when the user asks to \"model this repo\", \"diagram the architecture\", \"generate a C4 model\", \"create a forge model\", \"analyze this codebase architecturally\", \"produce an architecture doc site\", or any variant of inferring architecture from source. Invokes `forge analyze` and the Forge MCP server."
         },
         {
+          "name": "portfolio-impact",
+          "id": "portfolio-impact",
+          "description": "Work out what a change to one of your own libraries affects across your other repositories \u2014 which repos use it, how they are pinned, which call sites would break, and in what order to release. Use this when about to change, rename or remove a public API of a library that other repositories of the same owner depend on (as a Cargo git dependency, a Go module, an npm package, or an installed CLI), when asked \"who uses X?\", \"what breaks if I change X?\", \"which repos are behind X's newest tag?\", \"does X need a release?\", or \"in what order do I release these?\", and before cutting a tag of a library that has users. Requires the tropism CLI; uses symgraph or colab for call sites when available."
+        },
+        {
           "name": "reporting-tropism-issues",
           "id": "reporting-tropism-issues",
           "description": "Turn an experience of using tropism \u2014 a false positive, a check that would not run, a missing language or ecosystem, a wish for a feature \u2014 into a bug report or feature request that can actually be acted on, after first checking whether the behaviour is a known structural limit rather than a defect. Use this whenever someone is frustrated by a tropism finding, thinks tropism got something wrong, wants tropism to support something it does not, says a check reported \"unavailable\" and they do not know why, or asks how to report a problem or request a feature. Also use it before filing any issue against tropism, so a known limitation is not re-reported as a bug."
@@ -76,7 +81,7 @@
         {
           "name": "api-compatibility",
           "id": "api-compatibility",
-          "description": "Check whether a change to an API contract would break its consumers, using brake, before the change is written. Use when editing, generating or reviewing an OpenAPI/Swagger document, a .proto file, a GraphQL SDL schema, or an AsyncAPI document \u2014 removing or renaming a field, changing a type, adding a required parameter, changing a status code, tightening security \u2014 or when asked \"is this change backward compatible?\", \"will this break clients?\", or \"can I remove this field?\"."
+          "description": "Check whether a change to an API contract would break its consumers, using brake, before the change is written. Use when editing, generating or reviewing an OpenAPI/Swagger document, a .proto file, a GraphQL SDL schema, an AsyncAPI document, or an MCP server's tool list snapshot \u2014 removing or renaming a field, changing a type, adding a required parameter, changing a status code, tightening security \u2014 or when asked \"is this change backward compatible?\", \"will this break clients?\", or \"can I remove this field?\"."
         },
         {
           "name": "brake-adopt",
@@ -125,7 +130,7 @@
         {
           "name": "colab-codemod",
           "id": "colab-codemod",
-          "description": "Make a mechanical, repo-wide code change with colab instead of editing files one at a time or reaching for sed. Use when the same structural edit repeats across many files \u2014 an import path, a dependency rename, a symbol, a Java package, a Go struct tag, a call site, or a TOML/JSON/Markdown config key. Covers deciding whether colab fits, writing the .codemod script, checking blast radius before applying, and applying safely, via the CLI or the MCP tools."
+          "description": "Make a mechanical, repo-wide code change with colab instead of editing files one at a time or reaching for sed. Use when the same structural edit repeats across many files \u2014 an import path, a dependency rename, a symbol, a Java package, a Go struct tag, a call site, any code shape expressible as a pattern with $METAVARS (e.g. errors.Wrap($E, $M) \u2192 fmt.Errorf(...)), or a TOML/JSON/Markdown config key. Also for read-only structural search (colab find) when grep would match strings and comments too. Covers deciding whether colab fits, writing the .colab script, checking blast radius before applying, and applying safely, via the CLI or the MCP tools."
         },
         {
           "name": "refactor-dsl",

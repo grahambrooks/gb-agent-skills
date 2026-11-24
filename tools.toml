@@ -29,7 +29,7 @@ bx_hook = false
 
   [[plugin.tool]]
   repo = "symgraph"
-  ref = "v2026.11.1"
+  ref = "v2026.11.23"
   mcp = { server = "symgraph", args = ["serve"] }
 
 [[plugin]]
@@ -37,7 +37,7 @@ name = "architecture"
 
   [[plugin.tool]]
   repo = "forge"
-  ref = "v2026.9.8"
+  ref = "v2026.11.3"
   skills = "integrations/claude-plugin/forge-architect/skills"
   mcp = { server = "forge", args = ["mcp"] }
 
@@ -46,7 +46,7 @@ name = "architecture"
   # still drive the `tropism` CLI, which the MCP tools mirror (tropism#51).
   [[plugin.tool]]
   repo = "tropism"
-  ref = "v2026.11.2"
+  ref = "v2026.11.24"
   skills = "skills"
   mcp = { server = "tropism", bin = "tropism-mcp" }
 
@@ -55,7 +55,7 @@ name = "api-contracts"
 
   [[plugin.tool]]
   repo = "brake"
-  ref = "v2026.9.3"
+  ref = "v2026.11.3"
   skills = ".claude/skills"
   mcp = { server = "brake", args = ["mcp"] }
 
@@ -64,7 +64,7 @@ name = "docs-and-diagrams"
 
   [[plugin.tool]]
   repo = "adoc"
-  ref = "v2026.9.10"
+  ref = "v2026.11.3"
   skill = "docs/genai/claude-skill"
 
 [[plugin]]
@@ -76,7 +76,7 @@ name = "refactoring"
   # colab-codemod is synced.
   [[plugin.tool]]
   repo = "colab"
-  ref = "v2026.11.2"
+  ref = "v2026.11.24"
   skill = "plugins/claude/colab/skills/colab-codemod"
   mcp = { server = "colab", args = ["mcp"] }
 
@@ -84,5 +84,5 @@ name = "refactoring"
   # CLI (tree-sitter `find`, regex `replace`) and says when to use colab instead.
   [[plugin.tool]]
   repo = "refactor-dsl"
-  ref = "v2026.11.2"
+  ref = "v2026.11.3"
   skill = "skills/refactor-dsl"

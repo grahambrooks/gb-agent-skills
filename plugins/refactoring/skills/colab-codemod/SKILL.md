@@ -1,8 +1,8 @@
 ---
 name: colab-codemod
-description: Make a mechanical, repo-wide code change with colab instead of editing files one at a time or reaching for sed. Use when the same structural edit repeats across many files — an import path, a dependency rename, a symbol, a Java package, a Go struct tag, a call site, or a TOML/JSON/Markdown config key. Covers deciding whether colab fits, writing the .codemod script, checking blast radius before applying, and applying safely, via the CLI or the MCP tools.
+description: Make a mechanical, repo-wide code change with colab instead of editing files one at a time or reaching for sed. Use when the same structural edit repeats across many files — an import path, a dependency rename, a symbol, a Java package, a Go struct tag, a call site, any code shape expressible as a pattern with $METAVARS (e.g. errors.Wrap($E, $M) → fmt.Errorf(...)), or a TOML/JSON/Markdown config key. Also for read-only structural search (colab find) when grep would match strings and comments too. Covers deciding whether colab fits, writing the .colab script, checking blast radius before applying, and applying safely, via the CLI or the MCP tools.
 ---
-<!-- Synced from grahambrooks/colab@v2026.11.2 (plugins/claude/colab/skills/colab-codemod) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/colab@v2026.11.24 (plugins/claude/colab/skills/colab-codemod) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # Running a codemod with colab
 
@@ -31,8 +31,9 @@ it:
 cargo install --git https://github.com/grahambrooks/colab --locked
 ```
 
-There is also a Homebrew formula and per-platform release archives at
-<https://github.com/grahambrooks/colab/releases>.
+or with Homebrew (`brew tap grahambrooks/colab
+https://github.com/grahambrooks/colab && brew install colab`); per-platform
+archives are at <https://github.com/grahambrooks/colab/releases>.
 
 If the host has the colab **MCP server** connected instead of (or as
 well as) the binary, use the tools — see [Driving it over
@@ -47,8 +48,15 @@ MCP](#driving-it-over-mcp). The workflow is identical.
 - a type or function is renamed and every mention should follow
 - a Java package moves; a Go struct tag key or value changes
 - call sites need rewriting, including reordered arguments
+- **any repeated code shape** — `errors.Wrap($E, $M)` → `fmt.Errorf(…)`,
+  `self.assertEquals($A, $B)` → `assertEqual`, delete every
+  `console.log($$$ARGS)` — via `<lang>::pattern` (below)
+- **structural search**: `colab find` locates a shape without the false
+  positives grep gets from strings and comments
 - a config convention rolls out across repos — a `Cargo.toml` key, a
   `.claude/settings.json` entry, a managed block in `AGENTS.md`
+- **Markdown, by structure**: read with `colab outline` / `colab section`; change a section, table row, list item, phrase (`markdown::text "Section[phrase]"`), link or front-matter key with the `markdown::` modules, and every run refuses to break a link (`colab links` lists the broken ones, exit 10); move a section to another file with `colab mv-section a.md "Old" --to b.md --under "Done"`, which repoints the links to it
+- **Docs examples too**: add `and fences` to a code rule and it also rewrites the matching ```` ```go ```` / ```` ```rust ```` / … fences in Markdown files; `and prose` on a `symbol` rule also renames the name in comments and strings
 
 **Do not use colab when** the change needs meaning rather than shape:
 type-directed edits, resolving overloads, moving a symbol to another
@@ -57,7 +65,8 @@ the right edit differs per call site. Those need real edits, file by
 file.
 
 **Rule of thumb:** if you can state the change as "find every X and make
-it Y" without qualification, colab will do it. If your sentence needs an
+it Y" without qualification — and X can be written as code with holes in
+it — colab will do it. If your sentence needs an
 "except when…", write the edits yourself.
 
 ## The loop
@@ -69,14 +78,24 @@ each can save you the next.
 # 1. Blast radius. A few hundred bytes. Re-run after every script edit.
 #    This compiles the script too, so it also reports syntax errors
 #    (exit 2) and unknown namespaces/modules (exit 3).
-colab refactor --script fix.codemod --format json .
+colab refactor --script fix.colab --format json .
 
 # 2. Sample the actual hunks, once the counts look right.
-colab refactor --script fix.codemod --format diff .
+colab refactor --script fix.colab --format diff .
 
 # 3. Apply.
-colab refactor --script fix.codemod --write .
+colab refactor --script fix.colab --write .
 ```
+
+For a change of one or two rules, skip the file: pass each rule inline
+with `-e` (repeatable, run in order). Everything else is identical.
+
+```sh
+colab refactor -e 'match go::import "old/pkg" { replace "new/pkg" }' --format json .
+```
+
+Prefer a script file once there are several rules, or when the change
+should be committed and re-run later. `--script -` reads one from stdin.
 
 **Step 1 is the one that matters.** Its output:
 
@@ -92,7 +111,10 @@ Read three things:
 
 1. **`rules[].files`** — a rule showing `0` never changed anything. It
    compiled and ran, so the match string is wrong, not the syntax. Fix
-   it before going further; colab warns but will not stop you. Judge
+   it before going further; colab warns but will not stop you. When the
+   module saw something close, the rule carries a `near` list and the
+   warning says `nearest seen: \`a/b/v2\` (14 file(s))` — usually the
+   exact string you meant. Judge
    this on the *first* preview, against unmodified code: once a rule has
    been applied, re-running it correctly reports `0` and warns "matched
    no files", because the transform is idempotent and there is nothing
@@ -133,15 +155,95 @@ colab list-languages        # every registered backend
 colab list-rules go         # modules + actions for one backend
 ```
 
-The 15 backends: `c`, `cpp`, `csharp`, `go`, `java`, `js`, `kotlin`,
+The 16 backends: `c`, `cpp`, `csharp`, `go`, `java`, `js`, `kotlin`,
 `php`, `python`, `ruby`, `rust`, `swift` for source, and `json`,
-`markdown`, `toml` for config.
+`markdown`, `toml` for config, and `text` for a string in any file
+(`text::word ".codemod" { replace ".colab" }`): no grammar, so scope it.
 
 Every source backend has the same floor — an import-equivalent named for
 the language's own construct (`include` / `using` / `import` / `use` /
 `require`), taking `replace` / `delete` / `ensure`; a `symbol` rename;
 and a `call` rewrite via `replace_call`. Languages with a namespace or
 package declaration expose one; Go adds `struct_tag`, Rust adds `crate`.
+
+## Patterns: when no module fits
+
+`<lang>::pattern` takes **code with metavariables** instead of a name.
+Reach for it whenever the change is a shape rather than an import,
+symbol, or call name:
+
+```
+match go::pattern 'errors.Wrap($ERR, $MSG)' { replace 'fmt.Errorf("%s: %w", $MSG, $ERR)' }
+match python::pattern 'self.assertEquals($A, $B)' { replace 'self.assertEqual($A, $B)' }
+match js::pattern 'console.log($$$ARGS)' { delete }
+```
+
+- `$NAME` is one node, `$$$NAME` zero or more (an argument tail), `$_`
+  one unbound. The same name twice must bind the same text.
+- Write patterns in **single quotes** when they contain `"`.
+- The template must not re-match its own pattern, or a second run
+  changes the code again. `f($A)` → `g($A)` is safe; `f($A)` →
+  `f(ctx, $A)` is not.
+- Nested matches (`errors.Wrap(errors.Wrap(…))`) are all rewritten in
+  one pass.
+- A match covers the **whole node**: `if $C { $$$B }` does not match an
+  `if` with an `else`, nor `Union[$A, $B]` a three-member `Union`. Add a
+  metavariable (or `$$$`) for the part you want to allow.
+- **Narrow with `where`** instead of writing a cleverer pattern:
+  `where $M matches /^"/, not inside 'func $F(t *testing.T) { $$$ }'`.
+  The forms are `$X matches /re/`, `$X is <node-kind>`, `$$$X count 1..3`,
+  `follows '…'` / `precedes '…'` (siblings), `nth 1` / `nth -1`,
+  `field function`, `any(…)` / `all(…)`, `inside '…'` / `has '…'` (each
+  of the four relations may end `directly` or `until '…'`; name a
+  repeated one with `pattern test_func = '…'` and write `inside test_func`),
+  each optionally preceded by `not`. To tell same-named APIs apart, ask
+  the language server: `$F resolves "github.com/pkg/errors.Wrap"`,
+  `$X type "*os.File"`, and across files `$F calls "pkg.Func"`,
+  `$F called_by "pkg.Func"`, `$T implements "io.Reader"` (CLI only; a
+  missing server fails the run). Only `pattern` takes them. `colab calls`
+  / `colab implementations` (MCP `colab.calls` / `colab.implementations`)
+  show the same answers before you write the rule.
+- **Rewrite inside a binding with `rewriter`.** `rewriter t = 'timeout: $V' -> 'timeoutMs: $V'`
+  at the top, then `let $NEW = $$$OPTS | rewrite(t, …)` before the
+  action: each match inside `$$$OPTS` is rewritten in place, the rest kept.
+- **Derive part of a name with `let`.** A metavariable is a whole node,
+  so `Get$N` cannot match; bind the whole name and transform it before
+  the action: `where $F matches /^Get[A-Z]/ { let $N = $F | strip_prefix("Get")
+  replace '$X.$N()' }`. Steps: `lower` `upper` `capitalize` `snake`
+  `kebab` `camel` `pascal` `upper_snake` `strip_prefix("…")`
+  `strip_suffix("…")` `replace(/re/, "s")` `substring(a, b)`.
+- **Let the rule manage imports.** After the action, add
+  `requires import "fmt"` (any source language) and
+  `drops import "github.com/pkg/errors" when unused` (Go only). These touch
+  only the files the rule rewrote. A separate unconditional
+  `go::import "fmt" { ensure }` would add `fmt` to every file.
+- `delete` removes a match standing alone on its line with the line, and
+  a list element (argument, entry, property) with its comma; anything else
+  nested stays. A rewrite that would leave a syntax error is not applied to that
+  file — if `find` shows matches that `refactor` left alone, the template
+  is the problem.
+
+Search before you rewrite — it is read-only and cheap (`--table csv --group-by '$M'` counts the shapes a metavariable takes, for planning):
+
+```sh
+colab find -e "match go::pattern 'errors.Wrap(\$E, \$M)' { delete }" .
+# internal/load.go:14:15: errors.Wrap(err, "read config")
+```
+
+(`find` takes any rule; the action is ignored. Add `--detail detailed`
+to see what each `$NAME` bound to.)
+
+A pattern that matches nothing usually parses differently from the code
+you meant. Compare the trees:
+
+```sh
+colab ast --lang go --pattern 'errors.Wrap($E, $M)'
+colab ast --lang go --stdin < some/file.go
+```
+
+A pattern that is not valid code in the language fails to compile (exit
+3) and the error lists every wrapper it was tried in — fix the pattern,
+do not retry it unchanged.
 
 **The match string means something different per namespace** — an exact
 path for `go::import`, a segment prefix for `rust::use`, a `key:value`
@@ -152,20 +254,31 @@ before writing a rule for a namespace you have not used.
 
 ## Config files are addresses, not syntax
 
-`toml::key`, `json::key` and `markdown::block` edit data rather than
-source, so they take `set` / `insert` / `delete` instead of the source
-actions:
+`toml::key`, `json::key` and the `markdown::` modules edit data rather
+than source, so they take `set` / `insert` / `delete` instead of the
+source actions:
 
 ```
 match toml::key "workspace.package.edition" in "Cargo.toml" { set '"2024"' }
 match json::key "/scripts/test" in "package.json" { set '"vitest run"' }
 match markdown::block "conventions" in "AGENTS.md" { set '- run `make check`' }
+match markdown::section "Order of work" in "docs/plan.md" { set r#"…new body…"# }
+match markdown::frontmatter "updated" in "wiki/**" { set '2026-11-13' }
 ```
 
 `set` overwrites or creates; `insert` only creates. Values are compared
 by meaning, not text, so both are idempotent. Because they act where the
 target is *missing*, **always scope them** with `in "<glob>"` or a named
 file — an unscoped `set` adds the key to every file of that type.
+
+**Markdown is addressed by structure.** A section is a heading path,
+`"Parent > Child"`, or an anchor, `"#risks"`; it runs to the next heading
+of the same or a higher level. `markdown::section` takes `set` (replace
+everything under the heading), `insert`, `delete`, and `replace "<new
+heading>"`. A body that holds both quote characters goes in a raw string,
+`r#"…"#`. Before reading a long Markdown file, run `colab outline FILE`
+and then `colab section FILE "<address>"` for the part you need, rather
+than reading all of it.
 
 ## Symbol renames are blunt — scope them
 
@@ -185,34 +298,142 @@ matched against the path as the walker yields it, so where you invoke
 colab (and any `-C`) affects what it sees. Scoping also speeds the run
 up — files outside the glob are never parsed.
 
+Within a file, narrow it by code: `where inside '<pattern>'` keeps only
+the changes inside some match of the pattern (`not inside`: outside all
+of them). It works on `symbol` and `call`:
+
+```
+match rust::symbol "config" where inside 'pub fn load($$$P) -> $R { $$$B }' { replace "settings" }
+match go::call "log.Print" where not inside 'func $F(t *testing.T) { $$$B }' { replace_call "slog.Info($args)" }
+```
+
+It is still positional, not semantic: scope a rename only where the name
+lives entirely (a parameter, a local). A field used inside the scope but
+declared outside it would be renamed at its uses only, breaking the
+build — that is a job for `colab rename`.
+
 Before a symbol rename, check how common the name really is:
 
 ```sh
-rg -w 'Config' --stats     # everywhere? scope it, or don't use colab
+rg -w 'Config' --stats     # everywhere? scope it — or rename it semantically
 ```
+
+**When the name is shared — a field and a function both called
+`value`, a local that shadows a type — use `colab rename`.** It asks the
+language's own server (rust-analyzer, gopls, clangd, …) which
+occurrences are *the same symbol*, then reports, checks, backs up, and
+verifies the result like any codemod:
+
+```sh
+colab rename --at src/config.rs:2:9 --to amount --format json   # blast radius
+colab rename --at src/config.rs:2:9 --to amount --format diff   # hunks
+colab rename --at src/config.rs:2:9 --to amount --write --verify 'cargo check'
+```
+
+`--at FILE:LINE:COL` should point at the declaration; `--symbol NAME
+--in FILE` uses the first whole-word occurrence. It needs the server
+installed (`--lsp` to choose one) and the project root it expects
+(`.git`, `Cargo.toml`, `go.mod`, … — or `--root`). The first call starts
+and indexes the server, which takes seconds; later calls reuse it (it is
+kept running; `COLAB_KEEP_SERVER=0` turns that off, `colab lsp-daemon
+--stop` stops it). Use `<lang>::symbol` when the name is unique,
+`colab rename` when it is not.
+
+## IDE refactorings — extract, inline, references, safe delete
+
+For a *semantic* one-off (extract this into a function, inline that,
+who calls this, is this dead), ask the language server through colab
+instead of editing by hand. Each is reported, checked, and reversible
+like a codemod (`--format diff`, `--check`, `--backup`, `--verify`):
+
+```sh
+colab action --at src/lib.rs:40:9-42:30 --list                  # what the server offers here
+colab action --at src/lib.rs:40:9-42:30 --kind refactor.extract --title function --format diff
+colab references --symbol parse_header --in src/http.rs         # scope-aware, unlike rg -w
+colab safe-delete --symbol old_helper --in src/util.rs --write  # refuses (exit 1) if still used
+```
+
+- Extract needs a **selection** (`FILE:L:C-L:C`); most actions a position.
+- If several actions match, the error lists them all; re-run with a
+  sharper `--title`. Servers name kinds differently (rust-analyzer: every
+  extract is `refactor.extract`), so `--list` first.
+- Add `--tidy` to organize imports and format the changed files via the
+  same server; it shows up as a separate `tidy via …` rule.
+- Over MCP: `colab.action` (`list: true` first), `colab.references`,
+  `colab.rename` — previews unless `write: true`.
+
+## Moving files — never `mv` by hand
+
+To move or rename a file, use `colab mv` rather than `mv` / `git mv` plus
+hand-fixed imports. It runs `git mv` and asks the language server which
+references must follow (`mod util;`, `import ./util`, Java packages):
+
+```sh
+colab mv src/util.rs src/helpers.rs --format diff                 # what moves, what follows
+colab mv src/util.rs src/helpers.rs --write --verify 'cargo check -q'
+git status --short   # R = the move (staged), M = reference edits (unstaged)
+```
+
+File operations happen only in a git work tree, and only when the
+touched paths have no uncommitted changes (commit first, or
+`--allow-dirty`). A `colab rename` that renames a file too (a Java class)
+follows the same rules. If the report warns that a moved file changed so
+much that git may lose its history, re-run with `--commit-moves`: the
+move is committed on its own and `git log --follow` keeps working.
+`--backup DIR` + `colab undo --from DIR` reverses moves as well as edits.
 
 ## Applying safely
 
 ```sh
 # Reversible: snapshot originals, roll back if you change your mind.
-colab refactor --script fix.codemod --backup /tmp/snap --write .
+colab refactor --script fix.colab --backup /tmp/snap --write .
 colab undo --from /tmp/snap
 
 # Apply rule by rule, running a build after each; auto-revert on failure.
-colab refactor --script fix.codemod --verify 'cargo check' --write .
+colab refactor --script fix.colab --verify 'cargo check' --write .
 
 # Apply everything, then bisect to the single rule that broke the build.
-colab refactor --script fix.codemod --bisect 'cargo check' .
+colab refactor --script fix.colab --bisect 'cargo check' .
 
 # One git commit per rule, for a reviewable history.
-colab refactor --script fix.codemod --commit-per-rule .
+colab refactor --script fix.colab --commit-per-rule .
 ```
 
 On a large or unfamiliar codebase prefer `--verify` over a bare
 `--write`: it attributes a build failure to one rule instead of leaving
-you to work out which of five did it. Whatever you use, **run the
-project's own build or tests afterwards** — colab guarantees the edit
-was syntactic, not that the result compiles.
+you to work out which of five did it. `--verify` needs every rule to
+build on its own; when rules only build together (a new parameter and its
+callers), use `--bisect`.
+
+**Exit 11 means "conflicts, nothing written".** Before writing, colab
+checks each change: a `symbol` rename onto a name the file already uses,
+a Go, Python or JS template that writes `fmt.`, `pathlib.` or `lodash.`
+with nothing importing it, and, with `--verify-lsp`, any error the file's language
+server reports after the change but not before. Each is listed under
+`conflicts` (`conflict:` lines in human output). Fix the rule (add
+`requires import "fmt"`, choose another name, scope with `in`), and
+rerun. Pass `--allow-conflicts` only when you have read them and they are
+intended. Over MCP, `colab.apply` returns `applied: false` with the same
+`conflicts`; preview first and you will see them there.
+
+```sh
+# Cheap pre-write check by the language server (gopls, rust-analyzer, …).
+colab refactor --script fix.colab --verify-lsp --write .
+
+# Format the changed files (colab.toml [formatters], else the language
+# server) before writing; combines with --bisect, not with --verify.
+colab refactor --script fix.colab --tidy --bisect 'cargo check' --write .
+```
+
+**A run too big to review as one diff:** record it with `--format ndjson
+--detail diff > run.ndjson` and read `colab review run.ndjson` (by rule:
+files, lines, most edited; `--rule N` pages its diffs), or split it with
+`--split-pr`: one git branch per rule, `HEAD` plus that rule alone, for
+one pull request each. The work tree is left alone; the changed files
+must have no uncommitted changes.
+
+Whatever you use, **run the project's own build or tests afterwards** —
+colab guarantees the edit was syntactic, not that the result compiles.
 
 Narrowing what gets touched:
 
@@ -231,17 +452,79 @@ Narrowing what gets touched:
 doubles as a lint that keeps a convention from coming back:
 
 ```sh
-colab refactor --script lint.codemod --check .
+colab refactor --script lint.colab --check .
 ```
 
 Exit codes: `0` success · `1` config error · `2` script parse error ·
 `3` unsupported namespace/action · `4` I/O error · `10` `--check` found
-pending changes.
+pending changes · `11` conflicts found, nothing written
+(`--allow-conflicts` overrides).
 
 Defaults worth knowing: `--format human` on a TTY implies `--write`;
 every other format, and any non-TTY stdout, defaults to `--dry-run`.
 `--check` overrides both. So a script run from an agent or a pipe never
 writes unless you pass `--write`.
+
+In a GitHub workflow, `--format github` turns each pending change into
+an annotation on the pull request, at its lines, with the rule's
+`message` and `severity`; `--format sarif` writes SARIF 2.1.0 for code
+scanning (`github/codeql-action/upload-sarif`), each finding carrying its
+fix. The exit code is unchanged.
+
+### Repo packs: `colab.toml` and `colab fix`
+
+If the repository has a `colab.toml`, its conventions are already
+written down: `colab fix --check` reports what its packs would change
+(exit 10; `--baseline origin/main` counts only findings new since main, to adopt a rule on old code), and `colab fix --write` applies them, with `[run] check`
+bisected and reverted on failure and the `[formatters]` / `tidy`
+settings. (A bare `colab fix` writes only on a terminal; from an agent or
+a pipe it previews, like `refactor`.) Prefer it to running the packs one
+by one, and add a new lint rule to a pack it lists rather than to a
+loose script. `colab pack list` names the built-in packs
+(`go/1.18-modern`, `java/8-to-21`, `js/esm`, `python/3.12-typing`,
+`rust/edition-2021-to-2024`). Run one once with `colab refactor --script
+builtin:go/1.18-modern …`, or keep it applied by naming it in
+`colab.toml` (`[[packs]] pack = "…"`) for `colab fix`; read the pack's
+README (`examples/packs/`) for what it leaves alone.
+
+```toml
+[run]
+check = "go build ./..."
+tidy = true
+[formatters]
+go = "gofmt"
+[[packs]]
+pack = "go/1.18-modern"
+```
+
+### Testing a repo pack
+
+Before a pack gates CI, give it cases: `<pack>.tests/<case>/input/`
+and, when the pack should change them, `expected/`. `colab test --bless`
+writes `expected/`; review it, then `colab test` (exit 12 on a failure)
+checks the output, a second run, and conflicts, and names any rule no
+case exercises.
+
+### Findings and suppressions
+
+Give a lint rule a `message` and `severity` after its action, so CI
+output says what is wrong (`warning: pkg/errors is archived …`), and
+use `severity info` for rules that should report without failing
+`--check`:
+
+```
+match go::import "github.com/pkg/errors" {
+    delete
+    message "pkg/errors is archived; use fmt.Errorf"
+    severity warning
+}
+```
+
+Leave a deliberate exception in place with a `colab:ignore` comment on
+the line, or on its own line above, rather than narrowing the rule. Use
+the file's comment syntax (`// colab:ignore`, `# colab:ignore`,
+`<!-- colab:ignore -->`); names after it (a script name, or
+`<lang>::<module>`) limit it to those rules.
 
 ## Driving it over MCP
 
@@ -253,9 +536,31 @@ the server process started, and `include "..."` does not work at all.
 | ---- | ---- |
 | discover | `colab.list_languages`, then `colab.list_rules {lang}` |
 | check the script | `colab.lint_script {script, cwd}` |
+| search first | `colab.find {script, paths, cwd}` — read-only; `detail: "detailed"` for captures |
+| debug a pattern | `colab.ast {lang, pattern}` vs `colab.ast {lang, source}` |
+| check it does the right thing | `colab.test_rule {script, source, path, expected?}` — one in-memory snippet, nothing on disk |
 | blast radius | `colab.preview {script, paths, cwd}` — defaults to `detail: "counts"` |
 | sample hunks | `colab.preview {..., detail: "diff", max_files: 5}` |
 | apply | `colab.apply {script, paths, cwd}` |
+| read Markdown | `colab.outline {paths, depth?}`, `colab.section {path, section, body?}` |
+| change Markdown | `colab.edit_markdown {module, action, target, value?, paths, cwd}` — previews unless `write: true` |
+
+To move a file over MCP use `colab.mv {from, to, cwd}` (previews unless `write: true`; `git mv` plus the server's reference updates). There is no MCP tool for `colab fix`; use the CLI for it.
+
+**Three common jobs need no script at all.** Each previews unless
+`write: true`, and returns the generated `script` so you can extend it:
+
+| Job | Tool |
+| --- | ---- |
+| an import / `use` / include moved | `colab.move_import {lang, from, to, paths, cwd}` (omit `to` to delete) |
+| a dependency version or config value | `colab.set_config_key {key, value, paths, cwd}` — `value` in the file's syntax, e.g. `"\"1.10\""` |
+| rename a symbol, docs and comments too | `colab.rename_symbol {symbol, in, to, cwd}` — the server renames code; the old name in comments, strings, and config/docs files is listed under `text` and changed only with `include_text: true` |
+
+`colab.test_rule` is the cheapest way to confirm a rule before a repo-wide
+preview: hand it a few lines shaped like the real code and the `path` it
+would live at (only the extension matters). With `expected`, it answers
+`matches_expected` and, on a mismatch, an `expected_diff` from what it
+produced to what you wanted.
 
 `colab.lint_script` compiles the script, so it catches unknown
 namespaces as well as syntax. (The CLI's `colab explain` only *parses* —
@@ -280,6 +585,8 @@ The counters separate the three ways a run comes back empty:
 | `visited: N, scanned: 0` | Files exist but none are in a language the script targets. Check the namespace. |
 | `scanned: N, changed: 0` | Files were parsed; no rule matched. The match string is wrong — see the per-rule counts. |
 | one rule at `files: 0` | That rule's match string is wrong. The others are fine. |
+| `files: 0` with `unchanged` | The pattern matched, but the template's output would not parse there, so it was skipped. Usually a `$$$` capture that already carries a trailing comma. |
+| exit 11, `conflicts` | Nothing was written; see "Applying safely". |
 | `changed` far too high | A symbol rename is catching an unrelated name. Scope it with `in`. |
 
 More diagnosis — idempotency failures, skipped files, oversized output,

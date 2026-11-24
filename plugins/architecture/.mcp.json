@@ -4,7 +4,7 @@
       "type": "stdio",
       "command": "bx",
       "args": [
-        "grahambrooks/forge@v2026.9.8",
+        "grahambrooks/forge@v2026.11.3",
         "--",
         "mcp"
       ]
@@ -13,7 +13,7 @@
       "type": "stdio",
       "command": "bx",
       "args": [
-        "grahambrooks/tropism@v2026.11.2#tropism-mcp",
+        "grahambrooks/tropism@v2026.11.24#tropism-mcp",
         "--"
       ]
     }

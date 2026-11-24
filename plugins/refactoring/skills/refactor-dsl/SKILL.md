@@ -2,7 +2,7 @@
 name: refactor-dsl
 description: Use the refactor-dsl `refactor` CLI to search code by tree-sitter query or make a regex find-and-replace across many files, previewing a diff first. Use when you need to list every function, call or other syntax node matching a tree-sitter pattern in Rust, TypeScript/JavaScript, Python, Go, Java, C# or Ruby; when a repo-wide edit is a textual pattern (a regex with capture groups) scoped by extension or glob; or when deciding between refactor-dsl and colab for a mechanical change. Not for symbol-aware renames; `refactor rename` is a plain substring replace.
 ---
-<!-- Synced from grahambrooks/refactor-dsl@v2026.11.2 (skills/refactor-dsl) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
+<!-- Synced from grahambrooks/refactor-dsl@v2026.11.3 (skills/refactor-dsl) by scripts/sync_tool_skills.py. Edit upstream, then run `make sync-tools`. -->
 
 # refactor-dsl
 
